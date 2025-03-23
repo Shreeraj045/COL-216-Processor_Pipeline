@@ -427,9 +427,9 @@ void Processor::updatePipelineTable() {
             // Find the instruction that's stalled
             for (auto& tracker : pipelineTable) {
                 // If the instruction was in IF in the previous cycle and isn't in any other stage now
-                if (tracker.stages.size() > cycleCount && 
+                if (tracker.stages.size() > static_cast<size_t>(cycleCount) && 
                     tracker.stages[cycleCount-1] == "IF" &&
-                    tracker.stages.size() <= cycleCount + 1) {
+                    tracker.stages.size() <= static_cast<size_t>(cycleCount + 1)) {
                     // Mark it as still in IF
                     tracker.stages.resize(cycleCount + 1, "-");
                     tracker.stages[cycleCount] = "IF";
@@ -441,7 +441,7 @@ void Processor::updatePipelineTable() {
     
     // Update all existing instructions to show they're not in any stage this cycle if necessary
     for (auto& tracker : pipelineTable) {
-        if (tracker.stages.size() <= cycleCount) {
+        if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
             tracker.stages.resize(cycleCount + 1, "-");
         }
     }
@@ -453,7 +453,7 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
         if (tracker.assembly == assembly) {
             // Instruction already exists in the table
             // Make sure the stages vector is large enough for the current cycle
-            if (tracker.stages.size() <= cycleCount) {
+            if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
                 tracker.stages.resize(cycleCount + 1, "-");
             }
             // Update the stage for this cycle
