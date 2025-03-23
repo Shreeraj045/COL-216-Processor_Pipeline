@@ -55,8 +55,6 @@ protected:
     // Helper function to strip comments from assembly code
     std::string stripComments(const std::string& assembly);
     
-    // Generate the pipeline diagram for current cycle (for backward compatibility)
-    virtual std::vector<std::string> generatePipelineDiagram();
     
 public:
     Processor();
