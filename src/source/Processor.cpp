@@ -483,8 +483,16 @@ void Processor::printPipelineDiagram() {
         std::string line = tracker.assembly;
         
         // Add each stage separated by semicolons
+        std::string prevStage = "";
         for (const auto& stage : tracker.stages) {
-            line += ";" + stage;
+            // If this stage is the same as previous and not "-", print "-" instead
+            // to indicate a stall rather than repeating the stage name
+            if (stage == prevStage && stage != "-") {
+                line += ";-";
+            } else {
+                line += ";" + stage;
+                prevStage = stage;
+            }
         }
         
         std::cout << line << std::endl;
