@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -g
 
-SRC_DIR = src
+SRC_DIR = source
 INCLUDE_DIR = include
 BUILD_DIR = build
 
