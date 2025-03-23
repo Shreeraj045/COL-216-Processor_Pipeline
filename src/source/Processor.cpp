@@ -534,11 +534,3 @@ std::vector<std::string> Processor::generatePipelineDiagram() {
 }
 
 
-// addi x1, x0, 5;   IF;ID;EX;MEM;WB;-;-;-;-;-;-
-// addi x2, x0, 10;  - ;IF;ID;EX;MEM;WB;-;-;-;-;-
-// add x3, x1, x2;   - ;- ;IF;ID;ID;EX;MEM;WB;-;-;-
-// sub x4, x1, x2;   - ;- ;- ;IF;-;ID;EX;MEM;WB;-;-
-// xor x5, x1, x2;   - ;- ;- ;- ;- ;IF;ID;EX;MEM;WB;-
-// or x6, x1, x2;    - ;- ;- ;- ;- ;- ;IF;ID;EX;MEM;WB
-// and x7, x1, x2;   -;-;-;-;-;-;-;IF;ID;EX;MEM
-// NOP;-;-;-;-;-;-;-;-;IF;IF;IF

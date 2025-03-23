@@ -8,6 +8,4 @@
 0xfe1ff06f j -32               # Jump back to load next byte 
 0x00030513 mv x10, x6           # Return value = length
 0x00008067 ret                  # Return
-# String data starts here (ASCII for "Hello")
-0x6c6c6548 .word 0x6c6c6548     # "lleH"
-0x0000006f .word 0x0000006f     # "\0\0\0o"
+
