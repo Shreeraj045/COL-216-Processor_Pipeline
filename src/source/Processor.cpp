@@ -478,19 +478,52 @@ void Processor::printPipelineDiagram() {
                   return a.firstCycle < b.firstCycle;
               });
     
+    // Find the maximum length of any assembly instruction for alignment
+    size_t maxInstrLength = 0;
+    for (const auto& tracker : pipelineTable) {
+        maxInstrLength = std::max(maxInstrLength, tracker.assembly.length());
+    }
+    
     // Print each instruction with its pipeline stages
     for (const auto& tracker : pipelineTable) {
+        // Pad the instruction to align the pipeline stages
         std::string line = tracker.assembly;
+        line.append(maxInstrLength - tracker.assembly.length(), ' ');
+        
+        // Find the first IF and last WB stage
+        size_t firstIfIdx = tracker.stages.size();
+        size_t lastWbIdx = 0;
+        
+        for (size_t i = 0; i < tracker.stages.size(); i++) {
+            if (tracker.stages[i] == "IF" && i < firstIfIdx) {
+                firstIfIdx = i;
+            }
+            if (tracker.stages[i] == "WB") {
+                lastWbIdx = i;
+            }
+        }
         
         // Add each stage separated by semicolons
         std::string prevStage = "";
-        for (const auto& stage : tracker.stages) {
-            // If this stage is the same as previous and not "-", print "-" instead
-            // to indicate a stall rather than repeating the stage name
-            if (stage == prevStage && stage != "-") {
-                line += ";-";
-            } else {
-                line += ";" + stage;
+        for (size_t i = 0; i < tracker.stages.size(); i++) {
+            const std::string& stage = tracker.stages[i];
+            
+            // Before IF or after WB, just add a semicolon with empty space
+            if (i < firstIfIdx || i > lastWbIdx) {
+                line += "; ";
+            }
+            // Within pipeline stages
+            else {
+                // If this stage is the same as previous and not "-", print "-" instead
+                // to indicate a stall rather than repeating the stage name
+                if (stage == prevStage && stage != "-") {
+                    line += ";-";
+                } else {
+                    line += ";" + stage;
+                }
+            }
+            
+            if (stage != "-") {
                 prevStage = stage;
             }
         }
