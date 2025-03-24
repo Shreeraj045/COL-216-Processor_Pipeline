@@ -427,9 +427,9 @@ void Processor::updatePipelineTable() {
             // Find the instruction that's stalled
             for (auto& tracker : pipelineTable) {
                 // If the instruction was in IF in the previous cycle and isn't in any other stage now
-                if (tracker.stages.size() > cycleCount && 
+                if (tracker.stages.size() > static_cast<size_t>(cycleCount) && 
                     tracker.stages[cycleCount-1] == "IF" &&
-                    tracker.stages.size() <= cycleCount + 1) {
+                    tracker.stages.size() <= static_cast<size_t>(cycleCount + 1)) {
                     // Mark it as still in IF
                     tracker.stages.resize(cycleCount + 1, "-");
                     tracker.stages[cycleCount] = "IF";
@@ -441,7 +441,7 @@ void Processor::updatePipelineTable() {
     
     // Update all existing instructions to show they're not in any stage this cycle if necessary
     for (auto& tracker : pipelineTable) {
-        if (tracker.stages.size() <= cycleCount) {
+        if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
             tracker.stages.resize(cycleCount + 1, "-");
         }
     }
@@ -453,7 +453,7 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
         if (tracker.assembly == assembly) {
             // Instruction already exists in the table
             // Make sure the stages vector is large enough for the current cycle
-            if (tracker.stages.size() <= cycleCount) {
+            if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
                 tracker.stages.resize(cycleCount + 1, "-");
             }
             // Update the stage for this cycle
@@ -483,62 +483,18 @@ void Processor::printPipelineDiagram() {
         std::string line = tracker.assembly;
         
         // Add each stage separated by semicolons
+        std::string prevStage = "";
         for (const auto& stage : tracker.stages) {
-            line += ";" + stage;
+            // If this stage is the same as previous and not "-", print "-" instead
+            // to indicate a stall rather than repeating the stage name
+            if (stage == prevStage && stage != "-") {
+                line += ";-";
+            } else {
+                line += ";" + stage;
+                prevStage = stage;
+            }
         }
         
         std::cout << line << std::endl;
     }
 }
-
-std::vector<std::string> Processor::generatePipelineDiagram() {
-    std::vector<std::string> diagram;
-    
-    // Each line represents an instruction in the pipeline
-    // Format: <assembly>;<IF>;<ID>;<EX>;<MEM>;<WB>
-    
-    // Check each pipeline register and generate the diagram
-    if (memWb.valid) {
-        std::string instr = stripComments(memWb.instruction->getAssembly());
-        std::string line = instr + ";-;-;-;-;WB";
-        diagram.push_back(line);
-    }
-    
-    if (exMem.valid) {
-        std::string instr = stripComments(exMem.instruction->getAssembly());
-        std::string line = instr + ";-;-;-;MEM;-";
-        diagram.push_back(line);
-    }
-    
-    if (idEx.valid) {
-        std::string instr = stripComments(idEx.instruction->getAssembly());
-        std::string line = instr + ";-;-;EX;-;-";
-        diagram.push_back(line);
-    }
-    
-    if (ifId.valid) {
-        std::string instr = stripComments(ifId.instruction->getAssembly());
-        std::string line = instr + ";-;ID;-;-;-";
-        diagram.push_back(line);
-    }
-    
-    // Current instruction being fetched
-    if (!stall) {
-        auto fetchedInstr = memory.getInstruction(pc);
-        std::string instr = stripComments(fetchedInstr.getAssembly());
-        std::string line = instr + ";IF;-;-;-;-";
-        diagram.push_back(line);
-    }
-    
-    return diagram;
-}
-
-
-// addi x1, x0, 5;   IF;ID;EX;MEM;WB;-;-;-;-;-;-
-// addi x2, x0, 10;  - ;IF;ID;EX;MEM;WB;-;-;-;-;-
-// add x3, x1, x2;   - ;- ;IF;ID;ID;EX;MEM;WB;-;-;-
-// sub x4, x1, x2;   - ;- ;- ;IF;-;ID;EX;MEM;WB;-;-
-// xor x5, x1, x2;   - ;- ;- ;- ;- ;IF;ID;EX;MEM;WB;-
-// or x6, x1, x2;    - ;- ;- ;- ;- ;- ;IF;ID;EX;MEM;WB
-// and x7, x1, x2;   -;-;-;-;-;-;-;IF;ID;EX;MEM
-// NOP;-;-;-;-;-;-;-;-;IF;IF;IF
