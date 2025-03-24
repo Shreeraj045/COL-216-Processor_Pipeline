@@ -45,6 +45,9 @@ void Instruction::decode() {
         if (imm & 0x1000) {
             imm |= 0xFFFFE000;
         }
+    
+
+
     } else if (isUType()) {
         // U-type immediate: upper 20 bits
         imm = (machineCode & 0xFFFFF000);

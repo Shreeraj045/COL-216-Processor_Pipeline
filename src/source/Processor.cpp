@@ -9,6 +9,18 @@ Processor::Processor() : pc(0), cycleCount(0), instructionCount(0), stall(false)
 void Processor::loadProgram(const std::string& filename) {
     reset();
     memory.loadInstructions(filename);
+    
+    // Preload all instructions into the pipeline table
+    for (uint32_t i = 0; i < memory.getInstructionCount(); i++) {
+        auto instr = memory.getInstruction(i * 4);
+        std::string instrText = stripComments(instr.getAssembly());
+        
+        // Add all instructions to the tracking table without any stages yet
+        InstructionTracker newTracker;
+        newTracker.assembly = instrText;
+        newTracker.firstCycle = -1;  // -1 indicates not yet executed
+        pipelineTable.push_back(newTracker);
+    }
 }
 
 void Processor::run(int cycles) {
@@ -107,6 +119,9 @@ void Processor::stageID() {
         
         // Different branch/jump types have different target calculations
         if (instr->isBType()) {
+            // The immediate value in branch instructions represents the byte offset directly
+            // In RISC-V, the immediate value is already multiplied by 2 during encoding
+            // So we should use it directly without any scaling
             idEx.branchTarget = idEx.pc + instr->getImm();
         } else if (instr->getOpcode() == 0x6F) { // JAL
             idEx.branchTarget = idEx.pc + instr->getImm();
@@ -452,6 +467,12 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
     for (auto& tracker : pipelineTable) {
         if (tracker.assembly == assembly) {
             // Instruction already exists in the table
+            
+            // If this is the first time we're seeing this instruction executed
+            if (tracker.firstCycle == -1) {
+                tracker.firstCycle = cycleCount;
+            }
+            
             // Make sure the stages vector is large enough for the current cycle
             if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
                 tracker.stages.resize(cycleCount + 1, "-");
@@ -462,7 +483,7 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
         }
     }
     
-    // Instruction not found, add a new tracker
+    // If somehow the instruction wasn't preloaded (like a NOP), add it now
     InstructionTracker newTracker;
     newTracker.assembly = assembly;
     newTracker.firstCycle = cycleCount;
@@ -472,10 +493,20 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
 }
 
 void Processor::printPipelineDiagram() {
-    // Sort the instructions by the order they entered the pipeline
+    // Sort the instructions by program order (memory address)
     std::sort(pipelineTable.begin(), pipelineTable.end(), 
-              [](const InstructionTracker& a, const InstructionTracker& b) {
-                  return a.firstCycle < b.firstCycle;
+              [this](const InstructionTracker& a, const InstructionTracker& b) {
+                  // If both instructions have been executed, sort by first execution cycle
+                  if (a.firstCycle != -1 && b.firstCycle != -1) {
+                      return a.firstCycle < b.firstCycle;
+                  }
+                  // If only one has been executed, the executed one comes first
+                  if (a.firstCycle != -1) return true;
+                  if (b.firstCycle != -1) return false;
+                  
+                  // If neither has been executed, maintain original order
+                  // (which should be program order since we loaded them in sequence)
+                  return &a < &b;
               });
     
     // Find the maximum length of any assembly instruction for alignment
@@ -490,41 +521,44 @@ void Processor::printPipelineDiagram() {
         std::string line = tracker.assembly;
         line.append(maxInstrLength - tracker.assembly.length(), ' ');
         
-        // Find the first IF and last WB stage
-        size_t firstIfIdx = tracker.stages.size();
-        size_t lastWbIdx = 0;
-        
-        for (size_t i = 0; i < tracker.stages.size(); i++) {
-            if (tracker.stages[i] == "IF" && i < firstIfIdx) {
-                firstIfIdx = i;
-            }
-            if (tracker.stages[i] == "WB") {
-                lastWbIdx = i;
-            }
-        }
-        
-        // Add each stage separated by semicolons
-        std::string prevStage = "";
-        for (size_t i = 0; i < tracker.stages.size(); i++) {
-            const std::string& stage = tracker.stages[i];
+        // If this instruction was executed at some point, display its pipeline stages
+        if (tracker.firstCycle != -1) {
+            // Find the first IF and last WB stage
+            size_t firstIfIdx = tracker.stages.size();
+            size_t lastWbIdx = 0;
             
-            // Before IF or after WB, just add a semicolon with empty space
-            if (i < firstIfIdx || i > lastWbIdx) {
-                line += "; ";
-            }
-            // Within pipeline stages
-            else {
-                // If this stage is the same as previous and not "-", print "-" instead
-                // to indicate a stall rather than repeating the stage name
-                if (stage == prevStage && stage != "-") {
-                    line += ";-";
-                } else {
-                    line += ";" + stage;
+            for (size_t i = 0; i < tracker.stages.size(); i++) {
+                if (tracker.stages[i] == "IF" && i < firstIfIdx) {
+                    firstIfIdx = i;
+                }
+                if (tracker.stages[i] == "WB") {
+                    lastWbIdx = i;
                 }
             }
             
-            if (stage != "-") {
-                prevStage = stage;
+            // Add each stage separated by semicolons
+            std::string prevStage = "";
+            for (size_t i = 0; i < tracker.stages.size(); i++) {
+                const std::string& stage = tracker.stages[i];
+                
+                // Before IF or after WB, just add a semicolon with empty space
+                if (i < firstIfIdx || i > lastWbIdx) {
+                    line += "; ";
+                }
+                // Within pipeline stages
+                else {
+                    // If this stage is the same as previous and not "-", print "-" instead
+                    // to indicate a stall rather than repeating the stage name
+                    if (stage == prevStage && stage != "-") {
+                        line += ";-";
+                    } else {
+                        line += ";" + stage;
+                    }
+                }
+                
+                if (stage != "-") {
+                    prevStage = stage;
+                }
             }
         }
         
