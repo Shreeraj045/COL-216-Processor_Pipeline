@@ -493,21 +493,9 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
 }
 
 void Processor::printPipelineDiagram() {
-    // Sort the instructions by program order (memory address)
-    std::sort(pipelineTable.begin(), pipelineTable.end(), 
-              [this](const InstructionTracker& a, const InstructionTracker& b) {
-                  // If both instructions have been executed, sort by first execution cycle
-                  if (a.firstCycle != -1 && b.firstCycle != -1) {
-                      return a.firstCycle < b.firstCycle;
-                  }
-                  // If only one has been executed, the executed one comes first
-                  if (a.firstCycle != -1) return true;
-                  if (b.firstCycle != -1) return false;
-                  
-                  // If neither has been executed, maintain original order
-                  // (which should be program order since we loaded them in sequence)
-                  return &a < &b;
-              });
+
+    // Don't sort - keep original program order
+    // We don't need to sort because we preloaded instructions in program order
     
     // Find the maximum length of any assembly instruction for alignment
     size_t maxInstrLength = 0;
@@ -521,44 +509,30 @@ void Processor::printPipelineDiagram() {
         std::string line = tracker.assembly;
         line.append(maxInstrLength - tracker.assembly.length(), ' ');
         
-        // If this instruction was executed at some point, display its pipeline stages
+        // Show pipeline stages for all instructions that entered the pipeline
         if (tracker.firstCycle != -1) {
-            // Find the first IF and last WB stage
-            size_t firstIfIdx = tracker.stages.size();
-            size_t lastWbIdx = 0;
-            
-            for (size_t i = 0; i < tracker.stages.size(); i++) {
-                if (tracker.stages[i] == "IF" && i < firstIfIdx) {
-                    firstIfIdx = i;
-                }
-                if (tracker.stages[i] == "WB") {
-                    lastWbIdx = i;
-                }
-            }
-            
             // Add each stage separated by semicolons
             std::string prevStage = "";
             for (size_t i = 0; i < tracker.stages.size(); i++) {
                 const std::string& stage = tracker.stages[i];
                 
-                // Before IF or after WB, just add a semicolon with empty space
-                if (i < firstIfIdx || i > lastWbIdx) {
-                    line += "; ";
-                }
-                // Within pipeline stages
-                else {
-                    // If this stage is the same as previous and not "-", print "-" instead
-                    // to indicate a stall rather than repeating the stage name
-                    if (stage == prevStage && stage != "-") {
-                        line += ";-";
-                    } else {
-                        line += ";" + stage;
-                    }
+                // If this stage is the same as previous and not "-", print "-" instead
+                // to indicate a stall rather than repeating the stage name
+                if (stage == prevStage && stage != "-") {
+                    line += ";-";
+                } else {
+                    line += ";" + stage;
                 }
                 
                 if (stage != "-") {
                     prevStage = stage;
                 }
+            }
+        } else {
+            // For instructions that never entered pipeline, just add empty stages
+            // for the total number of cycles we've simulated
+            for (int i = 0; i < cycleCount; i++) {
+                line += "; ";
             }
         }
         
