@@ -1,0 +1,24 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		
+	  {
+		"type": "cppdbg",
+		"request": "launch",
+		"name": "Launch Program",
+		"program": "${workspaceFolder}/src/${input:executableName}",
+		"args": ["${workspaceFolder}/inputfiles/ripes_input.txt", "40"],
+		"cwd": "${workspaceFolder}",
+		"stopAtEntry": false,
+		"preLaunchTask": "build"
+	  }
+	],
+	"inputs": [
+	  {
+		"type": "pickString",
+		"id": "executableName",
+		"description": "Select the executable to debug",
+		"options": ["forward", "noforward"]
+	  }
+	]
+  }
