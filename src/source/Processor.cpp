@@ -46,6 +46,7 @@ void Processor::run(int cycles) {
         // Now execute ID and IF which will respect the stall flag
         stageID();
         stageIF();
+
         
         // Update the pipeline table with current state for the NEXT cycle
         cycleCount++;
@@ -493,49 +494,68 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
 }
 
 void Processor::printPipelineDiagram() {
-
-    // Don't sort - keep original program order
-    // We don't need to sort because we preloaded instructions in program order
-    
     // Find the maximum length of any assembly instruction for alignment
     size_t maxInstrLength = 0;
     for (const auto& tracker : pipelineTable) {
         maxInstrLength = std::max(maxInstrLength, tracker.assembly.length());
     }
     
+    // Define a fixed column width for each cycle - just enough for ";MEM"
+    const int cycleColWidth = 4; // Width for each cycle column
+    
+    // Print cycle numbers at the top
+    std::cout << std::left << std::setw(maxInstrLength) << "Instruction";
+    for (int i = 0; i < cycleCount; i++) {
+        std::string cycleHeader = ";C" + std::to_string(i);
+        std::cout << std::left << std::setw(cycleColWidth) << cycleHeader;
+    }
+    std::cout << std::endl;
+    
+    // Print a separator line
+    std::cout << std::string(maxInstrLength + cycleCount * cycleColWidth, '-') << std::endl;
+    
     // Print each instruction with its pipeline stages
     for (const auto& tracker : pipelineTable) {
         // Pad the instruction to align the pipeline stages
-        std::string line = tracker.assembly;
-        line.append(maxInstrLength - tracker.assembly.length(), ' ');
+        std::cout << std::left << std::setw(maxInstrLength) << tracker.assembly;
         
         // Show pipeline stages for all instructions that entered the pipeline
         if (tracker.firstCycle != -1) {
-            // Add each stage separated by semicolons
+            // Add each stage separated by semicolons with consistent width
             std::string prevStage = "";
             for (size_t i = 0; i < tracker.stages.size(); i++) {
                 const std::string& stage = tracker.stages[i];
                 
+                // Format the stage output with semicolon
+                std::string stageOutput;
+                
                 // If this stage is the same as previous and not "-", print "-" instead
                 // to indicate a stall rather than repeating the stage name
                 if (stage == prevStage && stage != "-") {
-                    line += ";-";
+                    stageOutput = ";-";
                 } else {
-                    line += ";" + stage;
+                    stageOutput = ";" + stage;
                 }
+                
+                // Ensure consistent width for each column
+                std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
                 
                 if (stage != "-") {
                     prevStage = stage;
                 }
             }
+            
+            // If we have fewer stages than cycles, pad with empty spaces
+            for (size_t i = tracker.stages.size(); i < static_cast<size_t>(cycleCount); i++) {
+                std::cout << std::left << std::setw(cycleColWidth) << "; ";
+            }
         } else {
             // For instructions that never entered pipeline, just add empty stages
-            // for the total number of cycles we've simulated
             for (int i = 0; i < cycleCount; i++) {
-                line += "; ";
+                std::cout << std::left << std::setw(cycleColWidth) << "; ";
             }
         }
-        
-        std::cout << line << std::endl;
+        std::cout << std::endl;
     }
 }
+
