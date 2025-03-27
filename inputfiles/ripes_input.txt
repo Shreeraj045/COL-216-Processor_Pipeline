@@ -1,20 +1,26 @@
-00a00093 addi x1 x0 10
-01400113 addi x2 x0 20
-002081b3 add x3 x1 x2
-00218663 beq x3 x2 12
-ff618213 addi x4 x3 -10
-00220663 beq x4 x2 12
-00520293 addi x5 x4 5
-00000013 addi x0 x0 0
-40120333 sub x6 x4 x1
-00130663 beq x6 x1 12
-00230393 addi x7 x6 2
-00134433 xor x8 x6 x1
-00000013 addi x0 x0 0
-00040663 beq x8 x0 12
-003404b3 add x9 x8 x3
-00000013 addi x0 x0 0
-03200513 addi x10 x0 50
-00150463 beq x10 x1 8
-003505b3 add x11 x10 x3
-00000013 addi x0 x0 0
+00A00093 addi x1, x0, 10    # x1 = 10  
+01400113 addi x2, x0, 20    # x2 = 20  
+002081B3 add x3, x1, x2     # x3 = x1 + x2 = 30  
+00218663 beq x3, x2, 12     # Branch if x3 == x2 (shouldn't branch, 30 != 20)  
+FF618213 addi x4, x3, -10   # x4 = x3 - 10 = 20  
+00220663 beq x4, x2, 12     # Branch if x4 == x2 (should branch, 20 == 20)  
+
+00520293 addi x5, x4, 5     # (Skipped if branch taken) x5 = x4 + 5 = 25  
+00000013 addi x0, x0, 0     # NOP  
+
+40120333 sub x6, x4, x1     # x6 = x4 - x1 = 20 - 10 = 10  
+00130663 beq x6, x1, 12     # Branch if x6 == x1 (should branch, 10 == 10)  
+
+00230393 addi x7, x6, 2     # (Skipped if branch taken) x7 = x6 + 2 = 12  
+00134433 xor x8, x6, x1     # x8 = x6 XOR x1 = 10 ⊕ 10 = 0  
+00000013 addi x0, x0, 0     # NOP  
+00040663 beq x8, x0, 12     # Branch if x8 == 0 (should branch, x8 is 0)  
+
+003404B3 add x9, x8, x3     # (Skipped if branch taken) x9 = x8 + x3 = 0 + 30 = 30  
+00000013 addi x0, x0, 0     # NOP  
+
+03200513 addi x10, x0, 50   # x10 = 50  
+00150463 beq x10, x1, 8     # Branch if x10 == x1 (shouldn't branch, 50 != 10)  
+
+003505B3 add x11, x10, x3   # x11 = x10 + x3 = 50 + 30 = 80  
+00000013 addi x0, x0, 0     # NOP  

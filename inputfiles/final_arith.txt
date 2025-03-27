@@ -1,19 +1,14 @@
-# Arithmetic and Logical Ops
-0x00500093 addi x1, x0, 5      # x1 = 5
-0x00A00113 addi x2, x0, 10     # x2 = 10
-0x002081B3 add x3, x1, x2      # x3 = x1 + x2 = 15
-0x40208233 sub x4, x1, x2      # x4 = x1 - x2 = -5
-0x0020E333 or x6, x1, x2       # x6 = x1 | x2
-
-# Branching and Memory Ops
-0x00218663 beq x3, x2, 12      # Branch if x3 == x2 (won't branch)
-0xFF618213 addi x4, x3, -10     # x4 = x3 - 10 = 20
-0x00220663 beq x4, x2, 12       # Branch if x4 == x2 (will branch)
-0x10002223 sw x3, 256(x0)       # Store x3 (30) at memory[256]
-0x10002403 lw x8, 256(x0)       # Load from memory[256] to x8
-
-# Multiplication, Division, and Jump
-0x022082B3 mul x5, x1, x2       # x5 = x1 * x2 = 50
-0x0020C2B3 div x5, x5, x1       # x5 = x5 / x1 = 10
-0x004000EF jal x1, 8            # Jump forward, skip next instruction
-0x00600313 addi x6, x0, 6       # x6 = 6 (executed after jump)
+00500093 addi x1, x0, 5      # x1 = 5
+00A00113 addi x2, x0, 10     # x2 = 10
+002081B3 add x3, x1, x2      # x3 = x1 + x2 = 15
+40208233 sub x4, x1, x2      # x4 = x1 - x2 = -5
+0020E333 or x6, x1, x2       # x6 = x1 | x2
+00218663 beq x3, x2, 12      # Branch if x3 == x2 (won't branch)
+FF618213 addi x4, x3, -10     # x4 = x3 - 10 = 20
+00220663 beq x4, x2, 12       # Branch if x4 == x2 (will branch)
+10002223 sw x3, 256(x0)       # Store x3 (30) at memory[256]
+10002403 lw x8, 256(x0)       # Load from memory[256] to x8
+022082B3 mul x5, x1, x2       # x5 = x1 * x2 = 50
+0020C2B3 div x5, x5, x1       # x5 = x5 / x1 = 10
+004000EF jal x1, 8            # Jump forward, skip next instruction
+00600313 addi x6, x0, 6       # x6 = 6 (executed after jump)

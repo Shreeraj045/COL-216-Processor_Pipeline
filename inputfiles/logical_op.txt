@@ -1,13 +1,12 @@
-0x00F00093 addi x1, x0, 15      # x1 = 15
-0x0020A233 or x4, x1, x2        # x4 = x1 | x2 (bitwise OR)
-0x0020C233 and x4, x1, x2       # x4 = x1 & x2 (bitwise AND)
-0x0030E233 xor x4, x1, x2       # x4 = x1 XOR x2
-0x00229293 sll x5, x5, 2        # x5 = x5 << 2 (shift left)
-0x0022D293 srl x5, x5, 2        # x5 = x5 >> 2 (shift right)
-0x0022F293 sra x5, x5, 2        # x5 = x5 >>> 2 (arith shift right)
-
-0x00300193 addi x3, x0, 3       # x3 = 3
-0x00400213 addi x4, x0, 4       # x4 = 4
-0x0041A463 bne x3, x4, 8        # Branch if x3 != x4 (should branch)
-0x00500293 addi x5, x0, 5       # x5 = 5 (should be skipped)
-0x00600313 addi x6, x0, 6       # x6 = 6 (executed after branch)
+00F00093 addi x1, x0, 15      # x1 = 15
+0020A233 or x4, x1, x2        # x4 = x1 | x2 (bitwise OR)
+0020C233 and x4, x1, x2       # x4 = x1 & x2 (bitwise AND)
+0030E233 xor x4, x1, x2       # x4 = x1 XOR x2
+00229293 sll x5, x5, 2        # x5 = x5 << 2 (shift left)
+0022D293 srl x5, x5, 2        # x5 = x5 >> 2 (shift right)
+0022F293 sra x5, x5, 2        # x5 = x5 >>> 2 (arith shift right)
+00300193 addi x3, x0, 3       # x3 = 3
+00400213 addi x4, x0, 4       # x4 = 4
+0041A463 bne x3, x4, 8        # Branch if x3 != x4 (should branch)
+00500293 addi x5, x0, 5       # x5 = 5 (should be skipped)
+00600313 addi x6, x0, 6       # x6 = 6 (executed after branch)

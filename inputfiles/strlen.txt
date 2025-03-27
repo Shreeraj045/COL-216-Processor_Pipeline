@@ -1,10 +1,10 @@
-00000297        auipc x5 0x0
-01028293        addi x5 x5 16
-00000313        addi x6 x0 0
-0002c503        lbu x10 0 x5
-00050863        beq x10 x0 16
-00130313        addi x6 x6 1
-00128293        addi x5 x5 1
-ff1ff06f        jal x0 -16
-00030513        addi x10 x6 0
-00008067        jalr x0 x1 0
+00000297 auipc x5, 0        # Load the current PC into x5 (used for relative addressing)
+01028293 addi x5, x5, 16    # x5 = x5 + 16 (adjust to point to some memory address)
+00000313 addi x6, x0, 0     # x6 = 0 (initialize counter)
+0002C503 lbu x10, 0(x5)     # Load byte from address x5 into x10
+00050863 beq x10, x0, 16    # If x10 == 0, exit loop (null-terminated string case)
+00130313 addi x6, x6, 1     # x6 = x6 + 1 (increment counter)
+00128293 addi x5, x5, 1     # x5 = x5 + 1 (move to next byte)
+FF1FF06F jal x0, -16        # Jump back to loop (unconditional loop)
+00030513 addi x10, x6, 0    # Move counter result to x10 (return length)
+00008067 jalr x0, x1, 0     # Return (jump back to caller)

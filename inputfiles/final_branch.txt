@@ -1,12 +1,11 @@
-# Testcase: Branching, Jump, Memory, and Arithmetic
-0x00300093 addi x1, x0, 3      # x1 = 3
-0x00500113 addi x2, x0, 5      # x2 = 5
-0x0020C463 blt x1, x2, 8       # Branch if x1 < x2 (should branch)
-0x00100313 addi x6, x0, 1      # Skipped due to branch
-0x00100393 addi x7, x0, 1      # x7 = 1 (executed after branch)
-0x00400093 addi x1, x0, 4      # x1 = 4
-0x00A00393 addi x7, x0, 10     # x7 = 10
-0x0070F463 bgeu x1, x7, 8      # Unsigned branch (won’t branch)
-0x00008067 jalr x0, x1, 0      # Jump to address in x1
-0x00112023 sw x1, 0(x2)        # Store x1 at memory[x2]
+00300093 addi x1, x0, 3      # x1 = 3
+00500113 addi x2, x0, 5      # x2 = 5
+0020C463 blt x1, x2, 8       # Branch if x1 < x2 (should branch)
+00100313 addi x6, x0, 1      # Skipped due to branch
+00100393 addi x7, x0, 1      # x7 = 1 (executed after branch)
+00400093 addi x1, x0, 4      # x1 = 4
+00A00393 addi x7, x0, 10     # x7 = 10
+0070F463 bgeu x1, x7, 8      # Unsigned branch (won’t branch)
+00008067 jalr x0, x1, 0      # Jump to address in x1
+00112023 sw x1, 0(x2)        # Store x1 at memory[x2]
 

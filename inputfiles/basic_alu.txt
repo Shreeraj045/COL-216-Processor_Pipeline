@@ -1,7 +1,7 @@
-0x00500093 addi x1, x0, 5      # x1 = 5
-0x00a00113 addi x2, x0, 10     # x2 = 10
-0x002081b3 add x3, x1, x2      # x3 = x1 + x2 = 15
-0x40208233 sub x4, x1, x2      # x4 = x1 - x2 = -5
-0x0020c2b3 xor x5, x1, x2      # x5 = x1 ^ x2
-0x0020e333 or x6, x1, x2       # x6 = x1 | x2
-0x0020f3b3 and x7, x1, x2      # x7 = x1 & x2
+00500093 addi x1, x0, 5      # x1 = 5
+00a00113 addi x2, x0, 10     # x2 = 10
+002081b3 add x3, x1, x2      # x3 = x1 + x2 = 15
+40208233 sub x4, x1, x2      # x4 = x1 - x2 = -5
+0020c2b3 xor x5, x1, x2      # x5 = x1 ^ x2
+0020e333 or x6, x1, x2       # x6 = x1 | x2
+0020f3b3 and x7, x1, x2      # x7 = x1 & x2
