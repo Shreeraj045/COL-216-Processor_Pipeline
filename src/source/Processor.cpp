@@ -7,22 +7,22 @@ void Processor::loadProgram(const string& filename) {
     reset();
     memory.loadInstructions(filename);
     
-    // Preload all instructions into the pipeline table
+    // load all instructions into the pipeline table
     for (uint32_t i = 0; i < memory.getInstructionCount(); i++) {
         uint32_t instrAddr = i * 4;
         auto instr = memory.getInstruction(instrAddr);
         string instrText = stripComments(instr.getAssembly());
         
-        // Skip blank lines
+        // Skip empty lines
         if (instrText.empty()) {
             continue;
         }
         
-        // Add all instructions to the tracking table without any stages yet
+        // add all instructions to the tracking table without any stages yet
         InstructionTracker newTracker;
         newTracker.assembly = instrText;
-        newTracker.pc = instrAddr;  // Store the instruction's PC address
-        newTracker.firstCycle = -1;  // -1 indicates not yet executed
+        newTracker.pc = instrAddr;  // store the instruction's PC address, multiples of 4
+        newTracker.firstCycle = -1;  // -1 -> not yet executed
         
         // If this is the first instruction, mark it as in IF stage for cycle 0
         if (i == 0) {
@@ -44,21 +44,22 @@ void Processor::run(int cycles) {
         // Detect hazards BEFORE ID and IF stages
         detectHazards();
         
-        // Now execute ID and IF which will respect the stall flag
+        // Now execute ID and IF, updated stall flag
         stageID();
         stageIF();
 
         
-        // Update the pipeline table with current state for the NEXT cycle
+        // update the pipeline table with current state for the NEXT cycle
         cycleCount++;
         updatePipelineTable();
     }
     
-    // Only print the pipeline diagram at the end
+    //print the pipeline diagram at the end
     printPipelineDiagram();
 }
 
 void Processor::reset() {
+    // all the registers, memory, latches, ALU info cleared
     pc = 0;
     cycleCount = 0;
     instructionCount = 0;
@@ -78,7 +79,7 @@ void Processor::reset() {
 
 void Processor::stageIF() {
     if (stall) {
-        return; // Don't fetch new instruction if stalled
+        return;
     }
 
     // Fetch the instruction at the current PC
@@ -88,17 +89,12 @@ void Processor::stageIF() {
     ifId.valid = true;
     ifId.instruction = make_shared<Instruction>(instr);
     ifId.pc = pc;
-    //print instruciton with cycle count 
-    // string instrText = stripComments(instr.getAssembly());
-    // cout<<"************************************************"<<endl;
-    // cout<<"Instruction at IF: "<<instrText<<"cycle"<<cycleCount<<endl;
-    // cout<<"************************************************"<<endl;
 
     // Increment PC
     pc += 4;
 
+    //tibt -> this instruction branch taken
     if (tibt) {
-        // cout<<"branch taken to pc: "<<btpc<<endl;
         ifId.clear();
         tibt = false ; 
         pc = btpc;
@@ -112,10 +108,10 @@ void Processor::stageID() {
         return;
     }
     
-    // Check if we're stalled - if so, don't advance instruction from ID to EX
+    // Check if stalled 
     if (stall) {
-        idEx.clear(); // Insert a bubble in ID/EX
-        return; // Keep instruction in IF/ID
+        idEx.clear(); 
+        return;
     }
     
 
@@ -131,21 +127,20 @@ void Processor::stageID() {
     // Check if this is a branch instruction and calculate target
     if (instr->isBType() || instr->isJump()) {
         idEx.isBType = true;
-        
-        // Different branch/jump types have different target calculations
         if (instr->isBType()) {
-            // The immediate value in branch instructions represents the byte offset directly
-            // In RISC-V, the immediate value is already multiplied by 2 during encoding
-            // So we should use it directly without any scaling
             idEx.branchTarget = idEx.pc + instr->getImm();
-        } else if (instr->getOpcode() == 0x6F) { // JAL
+        } else if (instr->getOpcode() == 0x6F) { 
+            // JAL
             idEx.branchTarget = idEx.pc + instr->getImm();
             idEx.branchTaken = true; // JAL always takes the jump
-        } else if (instr->getOpcode() == 0x67) { // JALR
-            idEx.branchTarget = (idEx.rs1Value + instr->getImm()) & ~1; // Clear least significant bit
-            idEx.branchTaken = true; // JALR always takes the jump
+        } else if (instr->getOpcode() == 0x67) { 
+            // JALR
+            idEx.branchTarget = (idEx.rs1Value + instr->getImm()) & ~1;
+            idEx.branchTaken = true; 
+            // JALR always takes the jump
         }
     } else {
+        // branch not taken
         idEx.isBType = false;
         idEx.branchTaken = false;
     }
@@ -159,7 +154,6 @@ void Processor::stageID() {
         switch (funct3) {
             case 0x0: // BEQ
                 idEx.branchTaken = (rs1Val == rs2Val);
-                // cout<<"BEQ with rs1Val: "<<rs1Val<<" rs2Val: "<<rs2Val<<endl;
                 break;
             case 0x1: // BNE
                 idEx.branchTaken = (rs1Val != rs2Val);
@@ -182,11 +176,11 @@ void Processor::stageID() {
         }
     }
     
-    // Handle branch prediction (simple always-not-taken strategy)
+    // branch prediction (always-not-taken prediction)
     if (idEx.isBType && idEx.branchTaken) {
-        // We're predicting not taken but branch is taken, flush and redirect
+        // wrong prediction, branch is taken, flush and redirect
         ifId.clear();
-        // pc = idEx.branchTarget;
+        // btpc -> branch taken pc
         btpc = idEx.branchTarget;
         tibt = true ; 
     }
@@ -218,9 +212,8 @@ void Processor::stageEX() {
         int funct3 = instr->getFunct3();
         int funct7 = instr->getFunct7();
         
-        // Check if this is an M-extension instruction
+        // Check if this is an M-extension instruction (MUL/DIV/REM)
         if (funct7 == 0x01) {
-            // M-extension instructions (MUL/DIV/REM)
             switch (funct3) {
                 case 0x0: // MUL
                     aluResult = idEx.rs1Value * idEx.rs2Value;
@@ -450,18 +443,11 @@ void Processor::stageMEM() {
 }
 
 void Processor::stageWB() {
-
     if (!memWb.valid) {
         return;
     }
     
     auto instr = memWb.instruction;
-
-    // cout<<"************************************************"<<endl;
-    // cout<<"Instruction at WB: "<<stripComments(instr->getAssembly())<<"cycle"<<cycleCount<<endl;
-    // cout<<"************************************************"<<endl;
-
-
     int rdNum = instr->getRd();
     
     // Write back result to register file
@@ -473,10 +459,9 @@ void Processor::stageWB() {
               instr->isJump()) {
         registers.write(rdNum, memWb.aluResult);
     }
-    //print just finished WB instruction with cycle count
 }
 
-// Helper function to strip comments and normalize instruction text
+//function to strip comments
 string Processor::stripComments(const string& assembly) {
     // Find position of comment start
     string result = assembly;
@@ -485,17 +470,17 @@ string Processor::stripComments(const string& assembly) {
         result = result.substr(0, commentPos);
     }
     
-    // Trim leading whitespace
+    // remove leading whitespace
     size_t start = result.find_first_not_of(" \t\r\n");
     if (start == string::npos) {
         return "NOP"; // Return "NOP" for empty lines or lines containing only whitespace
     }
     
-    // Trim trailing whitespace
+    // remove trailing whitespace
     size_t end = result.find_last_not_of(" \t\r\n");
     result = result.substr(start, end - start + 1);
     
-    // Normalize multiple spaces to single space
+    // remove multiple spaces to single space
     string normalizedResult;
     bool lastWasSpace = false;
     for (char c : result) {
@@ -614,7 +599,7 @@ void Processor::updateInstructionStage(uint32_t pc, const string& stage) {
 
 void Processor::printPipelineDiagram() {
     // Find the maximum length of any assembly instruction for alignment
-    size_t maxInstrLength = 15; // Minimum width for instruction column
+    size_t maxInstrLength = 15;
     for (const auto& tracker : pipelineTable) {
         maxInstrLength = max(maxInstrLength, tracker.assembly.length() + 10); // Add extra space for PC
     }
@@ -662,7 +647,7 @@ void Processor::printPipelineDiagram() {
             if (tracker.firstCycle != -1 && i < tracker.stages.size()) {
                 stageOutput += tracker.stages[i];
             } else {
-                stageOutput += "-"; // Changed from space to dash so all instructions are shown with '-'
+                stageOutput += "-"; 
             }
             
             cout << left << setw(cycleColWidth) << stageOutput;
@@ -672,11 +657,10 @@ void Processor::printPipelineDiagram() {
 }
 
 void Processor::updateOrAddInstruction(const string& assembly, const string& stage) {
-    // Trivial implementation: you can adapt it to your logic
-    // For now, just record a new instruction tracker entry
+    // Find the instruction with matching assembly in the table, or make a new one
     InstructionTracker instrTracker;
     instrTracker.assembly = assembly;
-    instrTracker.pc = 0;      // no specific PC since we don't have it here
+    instrTracker.pc = 0;    
     instrTracker.firstCycle = cycleCount;
     instrTracker.stages.resize(cycleCount + 1, "-");
     instrTracker.stages[cycleCount] = stage;
