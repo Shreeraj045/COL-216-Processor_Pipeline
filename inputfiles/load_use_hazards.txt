@@ -1,0 +1,7 @@
+0x00100093 addi x1 x0 1        # x1 = 1
+0x00a00113 addi x2 x0 10       # x2 = 10
+0x00112023 sw x1 0(x2)         # Store x1 at address x2 (10)
+0x00a00193 addi x3 x0 10       # x3 = 10
+0x0001a203 lw x4 0(x3)         # Load from address x3 (10) into x4 (should be 1)
+0x00320233 add x4 x4 x3        # x4 = x4 + x3 (load-use hazard)
+0x00421293 slli x5 x4 4        # x5 = x4 << 4 (test forwarding of previous result)
