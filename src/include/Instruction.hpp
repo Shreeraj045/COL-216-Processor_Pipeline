@@ -35,7 +35,7 @@ public:
     // Decode the instruction fields
     void decode();
     
-    // Instruction type identification
+    // Instruction identifiers 
     bool isRType() const;
     bool isIType() const;
     bool isSType() const;

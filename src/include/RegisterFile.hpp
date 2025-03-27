@@ -9,10 +9,10 @@ private:
 public:
     RegisterFile();
     
-    // Get register value, x0 always returns 0
+    // Get register value, (imp - x0 always returns 0)
     int read(int regNum) const;
     
-    // Set register value, writes to x0 are ignored
+    // Set register value, (imp - writes to x0 are ignored)
     void write(int regNum, int value);
     
     // Reset all registers to 0
