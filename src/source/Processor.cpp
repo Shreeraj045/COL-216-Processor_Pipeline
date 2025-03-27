@@ -22,21 +22,18 @@ void Processor::loadProgram(const std::string& filename) {
         newTracker.assembly = instrText;
         newTracker.pc = instrAddr;  // Store the instruction's PC address
         newTracker.firstCycle = -1;  // -1 indicates not yet executed
+        
+        // If this is the first instruction, mark it as in IF stage for cycle 0
+        if (i == 0) {
+            newTracker.firstCycle = 0;
+            newTracker.stages.resize(1, "IF");
+        }
+        
         pipelineTable.push_back(newTracker);
     }
 }
 
 void Processor::run(int cycles) {
-    // For the very first instruction, record its IF stage before executing any pipeline stage
-    if (cycles > 0) {
-        // Only if we're just starting execution (cycleCount == 0)
-        if (cycleCount == 0) {
-            auto firstInstr = memory.getInstruction(pc);
-            std::string instrText = stripComments(firstInstr.getAssembly());
-            updateOrAddInstruction(instrText, "IF");
-        }
-    }
-
     for (int i = 0; i < cycles; ++i) {
         // Execute pipeline stages in reverse order to avoid overwriting
         stageWB();
