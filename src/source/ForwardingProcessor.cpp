@@ -15,23 +15,19 @@ void ForwardingProcessor::detectHazards() {
     
     auto idInstr = ifId.instruction;
     
-    // CASE 1: Load-use hazard - when we need a value that's being loaded from memory
+    // CASE 1: Load-use hazard - when we read a value that's being written in memory
     if (idEx.valid && idEx.instruction && idEx.instruction->isLoad()) {
         int loadDest = idEx.instruction->getRd();
         
-        // Check if either source register of the instruction in ID matches the load destination
+        // rs1/rs2 of ID matches the load destination
         if ((idInstr->getRs1() == loadDest && loadDest != 0) || 
-            (idInstr->getRs2() == loadDest && loadDest != 0 && 
-             !idInstr->isIType() && !idInstr->isUType() && !idInstr->isJType())) {
-            // Load-use hazard detected, stall the pipeline
+            (idInstr->getRs2() == loadDest && loadDest != 0 && !idInstr->isIType() && !idInstr->isUType() && !idInstr->isJType())) {
+            // Load-use hazard detected, stall the pipeline, bubble in id/ex
             stall = true;
-            idEx.clear(); // Insert a bubble in ID/EX
-            // cout << "HAZARD: Load-use hazard detected, stalling" << endl;
+            idEx.clear(); 
             return;
         }
     }
-    
-    // We no longer need branch data hazard detection here since branches are evaluated in EX now
 }
 
 void ForwardingProcessor::stageID() {
@@ -42,8 +38,9 @@ void ForwardingProcessor::stageID() {
     
     // Check if we're stalled - if so, don't advance instruction from ID to EX
     if (stall) {
-        idEx.clear(); // Insert a bubble in ID/EX
-        return; // Keep instruction in IF/ID
+        // Insert a bubble in ID/EX
+        idEx.clear(); 
+        return;
     }
     
     // Copy the instruction and PC from IF/ID to ID/EX
@@ -58,26 +55,16 @@ void ForwardingProcessor::stageID() {
     int rs1Value = registers.read(rs1);
     int rs2Value = registers.read(rs2);
     
-    // cout << "ID STAGE: Initial rs1(" << rs1 << ")=" << rs1Value 
-    //           << ", rs2(" << rs2 << ")=" << rs2Value << endl;
-    
     // Store values in pipeline register
     idEx.rs1Value = rs1Value;
     idEx.rs2Value = rs2Value;
     
-    // Tag if this is a branch instruction - but don't evaluate it yet
+    // mark for future, if this is a branch instruction 
     if (instr->isBType() || instr->isJump()) {
         idEx.isBType = true;
     } else {
         idEx.isBType = false;
     }
-    
-    // Print debug information for the ID stage
-    // auto cinstr = memory.getInstruction(idEx.pc);
-    // string cinstrText = stripComments(cinstr.getAssembly());
-    // cout << "************************************************" << endl;
-    // cout << "Instruction at ID: " << cinstrText << " cycle " << cycleCount << endl;
-    // cout << "************************************************" << endl;
 }
 
 void ForwardingProcessor::stageEX() {
@@ -86,32 +73,22 @@ void ForwardingProcessor::stageEX() {
         return;
     }
     
-    // Copy values from ID/EX to EX/MEM
+    // copy values from ID/EX to EX/MEM
     exMem.instruction = idEx.instruction;
     exMem.pc = idEx.pc;
     exMem.valid = true;
     exMem.isBType = idEx.isBType;
     
-    // Add debug info for jump instruction identification
     auto instr = exMem.instruction;
-    // cout << "DEBUG: Instruction opcode: 0x" << hex << instr->getOpcode() << dec << endl;
-    // cout << "DEBUG: isJType: " << instr->isJType() << ", isJump: " << instr->isJump() << endl;
-    // cout << "DEBUG: Branch target would be: " << (idEx.pc + instr->getImm()) << endl;
     
-    // Forward values from MEM/WB if needed
+    // forward values from MEM/WB if needed
     int rs1 = idEx.instruction->getRs1();
     int rs2 = idEx.instruction->getRs2();
     
-    // Fetch register values directly from register file instead of using cached values
+    // get rs1, rs2 values
     int rs1Value = registers.read(rs1);
     int rs2Value = registers.read(rs2);
-    
-    // // Add debug information about initial values
-    // cout << "EX STAGE: Initial rs1(" << rs1 << ")=" << rs1Value 
-    //           << ", rs2(" << rs2 << ")=" << rs2Value << endl;
-    
-    // Forward from MEM/WB first (older instruction)
-    // This is critical for correct operation - we prioritize older instructions
+ 
     if (memWb.valid && memWb.instruction) {
         int memWbRd = memWb.instruction->getRd();
         
@@ -121,69 +98,45 @@ void ForwardingProcessor::stageEX() {
             
             if (rs1 == memWbRd) {
                 rs1Value = wbValue;
-                // cout << "EX STAGE: Forwarded MEM/WB to rs1, new value=" << rs1Value << endl;
             }
             if (rs2 == memWbRd) {
                 rs2Value = wbValue;
-                // cout << "EX STAGE: Forwarded MEM/WB to rs2, new value=" << rs2Value << endl;
             }
         }
     }
-    
-    // Then forward from EX/MEM (newer instruction) to override if needed
-    // if (exMem.valid && exMem.instruction) {
-    //     int exMemRd = exMem.instruction->getRd();
         
-    //     // Check if EX/MEM is writing to a register we're reading from
-    //     if (exMemRd != 0) {
-    //         // Forward ALU result (not for loads)
-    //         if (!exMem.instruction->isLoad()) {
-    //             if (rs1 == exMemRd) {
-    //                 rs1Value = exMem.aluResult;
-    //                 cout << "EX STAGE: Forwarded EX/MEM to rs1, new value=" << rs1Value << endl;
-    //             }
-    //             if (rs2 == exMemRd) {
-    //                 rs2Value = exMem.aluResult;
-    //                 cout << "EX STAGE: Forwarded EX/MEM to rs2, new value=" << rs2Value << endl;
-    //             }
-    //         }
-    //     }
-    // }
-    
     // Store the possibly forwarded values
     exMem.rs1Value = rs1Value;
     exMem.rs2Value = rs2Value;
     
     int aluResult = 0;
     
-    // NEW BRANCH HANDLING: Evaluate branches in EX with forwarded values
+    // NEW BRANCH HANDLING: detect branches in EX with forwarded values
     if (instr->isBType()) {
-        // Calculate branch target
+        // branch dest
         exMem.branchTarget = idEx.pc + instr->getImm();
         
-        // Evaluate branch condition with forwarded values
+        // evaluate branch condition with forwarded values
         int funct3 = instr->getFunct3();
         
+        // in order: BEQ, BNE, BLT, BGE, BLTU, BGEU
         switch (funct3) {
-            case 0x0: // BEQ
+            case 0x0: 
                 exMem.branchTaken = (rs1Value == rs2Value);
-                // cout << "EX STAGE: BEQ with forwarded rs1Val: " << rs1Value 
-                //          << " rs2Val: " << rs2Value 
-                //          << " taken: " << exMem.branchTaken << endl;
                 break;
-            case 0x1: // BNE
+            case 0x1: 
                 exMem.branchTaken = (rs1Value != rs2Value);
                 break;
-            case 0x4: // BLT
+            case 0x4: 
                 exMem.branchTaken = (rs1Value < rs2Value);
                 break;
-            case 0x5: // BGE
+            case 0x5: 
                 exMem.branchTaken = (rs1Value >= rs2Value);
                 break;
-            case 0x6: // BLTU
+            case 0x6: 
                 exMem.branchTaken = ((unsigned int)rs1Value < (unsigned int)rs2Value);
                 break;
-            case 0x7: // BGEU
+            case 0x7: 
                 exMem.branchTaken = ((unsigned int)rs1Value >= (unsigned int)rs2Value);
                 break;
             default:
@@ -191,7 +144,7 @@ void ForwardingProcessor::stageEX() {
                 break;
         }
         
-        // Handle branch decision immediately (after EX stage)
+        // branch decision (after EX stage)
         if (exMem.branchTaken) {
             // Branch is taken, flush pipeline and redirect
             ifId.clear();
@@ -199,22 +152,19 @@ void ForwardingProcessor::stageEX() {
             
             // Set new PC for next IF
             pc = exMem.branchTarget;
-            
-            // cout << "EX STAGE: Branch taken! Target PC: " << exMem.branchTarget << endl;
         }
-    } else if (instr->isJump() || instr->getOpcode() == 0x6F) { // Added direct opcode check
-        // Modified condition to catch all jump instructions
-        // cout << "DEBUG: Jump instruction detected!" << endl;
-        
+
+    } else if (instr->isJump() || instr->getOpcode() == 0x6F) {       
         // For jumps
-        if (instr->getOpcode() == 0x6F) { // JAL
+        if (instr->getOpcode() == 0x6F) { 
+            // JAL
             exMem.branchTarget = idEx.pc + instr->getImm();
-            aluResult = idEx.pc + 4; // Return address
-            // cout << "DEBUG: JAL jump to " << exMem.branchTarget << endl;
-        } else if (instr->getOpcode() == 0x67) { // JALR
-            exMem.branchTarget = (rs1Value + instr->getImm()) & ~1; // Clear LSB
-            aluResult = idEx.pc + 4; // Return address
-            // cout << "DEBUG: JALR jump to " << exMem.branchTarget << endl;
+            aluResult = idEx.pc + 4;
+
+        } else if (instr->getOpcode() == 0x67) { 
+            // JALR, ~1 used for even alignmnet of adress
+            exMem.branchTarget = (rs1Value + instr->getImm()) & ~1; 
+            aluResult = idEx.pc + 4; 
         }
         
         // Jumps are always taken
@@ -225,16 +175,14 @@ void ForwardingProcessor::stageEX() {
         idEx.clear();
         pc = exMem.branchTarget;
         
-        // cout << "EX STAGE: Jump taken! Target PC: " << exMem.branchTarget << endl;
     } else {
         // Regular ALU operations - same as before
         if (instr->isRType()) {
             int funct3 = instr->getFunct3();
             int funct7 = instr->getFunct7();
             
-            // Check if this is an M-extension instruction
+            // Check if this is an M-extension instruction (MUL/DIV/REM)
             if (funct7 == 0x01) {
-                // M-extension instructions (MUL/DIV/REM)
                 switch (funct3) {
                     case 0x0: // MUL
                         aluResult = rs1Value * rs2Value;
@@ -404,15 +352,10 @@ void ForwardingProcessor::stageEX() {
     }
     
     exMem.aluResult = aluResult;
+
     //if branch and brach taken set btpc as new pc ; 
     if(exMem.isBType && exMem.branchTaken){
         btpc = exMem.branchTarget;
         tibt = true;
     }
-
-    // Debug output
-    auto kinstr = memory.getInstruction(idEx.pc);
-    // cout << "************************************************" << endl;
-    // cout << "Instruction at EX: " << stripComments(kinstr.getAssembly()) << " cycle " << cycleCount << endl;
-    // cout << "************************************************" << endl;
 }

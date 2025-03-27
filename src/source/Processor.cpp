@@ -188,23 +188,8 @@ void Processor::stageID() {
         ifId.clear();
         // pc = idEx.branchTarget;
         btpc = idEx.branchTarget;
-        //print which instrcuton just took place in ID stage 
-        // auto instr = memory.getInstruction(idEx.pc);
-        // string instrText = stripComments(instr.getAssembly());
-        // cout<<"Instruction at pc: "<<instrText<<endl;
-        // cout<<"BTPC"<<btpc<<endl;
-        //print instryuction of btpc pc 
-        // auto kinstr = memory.getInstruction(btpc);
-        // string kinstrText = stripComments(kinstr.getAssembly());
-        // cout<<"Instruction at btpc: "<<kinstrText<<endl;
         tibt = true ; 
     }
-    //print jusst finsihed ID instruciton with cycle count 
-    // auto cinstr = memory.getInstruction(idEx.pc);
-    // string cinstrText = stripComments(cinstr.getAssembly());
-    // cout<<"************************************************"<<endl;
-    // cout<<"Instruction at ID: "<<cinstrText<<"cycle"<<cycleCount<<endl;
-    // cout<<"************************************************"<<endl;
 
     
 }
@@ -406,10 +391,6 @@ void Processor::stageEX() {
     
     exMem.aluResult = aluResult;
 
-    // auto kinstr = memory.getInstruction(idEx.pc);
-    // cout<<"************************************************"<<endl;
-    // cout<<"Instruction at EX: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<endl;
-    // cout<<"************************************************"<<endl;
 }
 
 void Processor::stageMEM() {
@@ -465,11 +446,6 @@ void Processor::stageMEM() {
                 break;
         }
     }
-    //prit just finished MEM instruction with cycle count
-    // auto kinstr = memory.getInstruction(exMem.pc);
-    // cout<<"************************************************"<<endl;
-    // cout<<"Instruction at MEM: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<endl;
-    // cout<<"************************************************"<<endl;
 
 }
 
