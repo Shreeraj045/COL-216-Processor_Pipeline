@@ -73,16 +73,17 @@ void Memory::loadInstructions(const std::string& filename) {
         }
         
         std::istringstream iss(line);
-        uint32_t machineCode;
+        std::string machineCodeStr;
         std::string assembly;
         
-        // Read the machine code (in hex or decimal)
-        if (line.substr(0, 2) == "0x") {
-            iss.ignore(2); // Skip "0x"
-            iss >> std::hex >> machineCode;
-        } else {
-            iss >> machineCode;
-        }
+        // Read the first token as machine code
+        iss >> machineCodeStr;
+        
+        // Convert machine code string to uint32_t as hexadecimal
+        uint32_t machineCode;
+        std::stringstream ss;
+        ss << std::hex << machineCodeStr;
+        ss >> machineCode;
         
         // Get rest of line as assembly code
         std::getline(iss >> std::ws, assembly);
