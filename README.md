@@ -72,8 +72,8 @@ For the non-forwarding design, look at a branch instruction that waits on a prev
 1) `add x10, x0, 10`  
 2) `add x11, x0, 10`  
 3) `beq x10, x11, 8`  
-4) Some instruction  
-5) Some instruction (target of beq)  
+4) `Some instruction`  
+5) `Some instruction` (target of beq)  
 
 If we decode the branch in the ID stage:
 ```
