@@ -581,7 +581,7 @@ void Processor::updatePipelineTable() {
     }
     
     // Instruction in IF stage
-    if (!stall && !libt && pc < memory.getInstructionCount() * 4) {
+    if (!stall && pc < memory.getInstructionCount() * 4) {
         // Only track IF for valid PC addresses within program memory
         updateInstructionStage(pc, "IF");
     } else if (stall && ifId.valid) {

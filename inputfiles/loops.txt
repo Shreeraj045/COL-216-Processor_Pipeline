@@ -1,0 +1,7 @@
+0x00000193 addi x3, x0, 0       # x3 = loop counter (i = 0)
+0x00500213 addi x4, x0, 5       # x4 = loop limit (5)
+0x008000EF jal x1, 8            # Jump to function
+0xFFF00193 addi x3, x3, -1      # Decrement i (executed after function return)
+0xFE3196E3 bne x3, x0, -12      # Repeat loop until i == 0
+0x00118193 addi x3, x3, 1       # i++
+0x00008067 jalr x0, x1, 0       # Return to caller
