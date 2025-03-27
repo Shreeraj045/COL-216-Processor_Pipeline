@@ -683,7 +683,7 @@ void Processor::printPipelineDiagram() {
             if (tracker.firstCycle != -1 && i < tracker.stages.size()) {
                 stageOutput += tracker.stages[i];
             } else {
-                stageOutput += " ";
+                stageOutput += "-"; // Changed from space to dash so all instructions are shown with '-'
             }
             
             std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
