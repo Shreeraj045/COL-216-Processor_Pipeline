@@ -659,7 +659,7 @@ void Processor::printPipelineDiagram() {
     // Print cycle numbers at the top
     std::cout << std::left << std::setw(maxInstrLength) << "Instruction (PC)";
     for (int i = 0; i < cycleCount; i++) {
-        std::string cycleHeader = "| C" + std::to_string(i);
+        std::string cycleHeader = "; C" + std::to_string(i);
         std::cout << std::left << std::setw(cycleColWidth) << cycleHeader;
     }
     std::cout << std::endl;
@@ -683,7 +683,7 @@ void Processor::printPipelineDiagram() {
         
         // Add each stage for each cycle
         for (size_t i = 0; i < static_cast<size_t>(cycleCount); i++) {
-            std::string stageOutput = "| ";
+            std::string stageOutput = "; ";
             
             if (tracker.firstCycle != -1 && i < tracker.stages.size()) {
                 stageOutput += tracker.stages[i];
