@@ -108,4 +108,8 @@ The simulator maintains a pipeline table that tracks which instruction is in eac
 **Command Line Usage:**
 ```bash
 ./forward <instruction_file> <cycle_count>
-./noforward <instruction_file> <cycle_count>
+./noforward <instruction_file> <cycle_count> 
+
+// to test on all inputfiles
+chmod +x run_noforward_tests.sh
+./run_noforward_tests.sh
