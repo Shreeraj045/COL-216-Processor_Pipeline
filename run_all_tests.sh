@@ -50,41 +50,32 @@ for TEST_FILE in $TEST_FILES; do
     src/forward "$TEST_FILE" $CYCLES > "outputfiles/actual/forward_${BASENAME}.txt"
     
     # Compare with expected outputs if they exist
-    if [ -f "outputfiles/noforward_${BASENAME}.txt" ]; then
+    if [ -f "outputfiles/expected/noforward_${BASENAME}.txt" ]; then
         echo -e "${YELLOW}Comparing non-forwarding results...${NC}"
-        diff "outputfiles/noforward_${BASENAME}.txt" "outputfiles/actual/noforward_${BASENAME}.txt" > /dev/null
+        diff "outputfiles/expected/noforward_${BASENAME}.txt" "outputfiles/actual/noforward_${BASENAME}.txt" > /dev/null
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✅ Non-forwarding test passed!${NC}"
         else
             echo -e "${RED}❌ Non-forwarding test failed. See differences:${NC}"
-            diff "outputfiles/noforward_${BASENAME}.txt" "outputfiles/actual/noforward_${BASENAME}.txt" | head -n 10
+            diff "outputfiles/expected/noforward_${BASENAME}.txt" "outputfiles/actual/noforward_${BASENAME}.txt" | head -n 10
         fi
     else
         echo -e "${YELLOW}No expected output file for non-forwarding test.${NC}"
     fi
     
-    if [ -f "outputfiles/forward_${BASENAME}.txt" ]; then
+    if [ -f "outputfiles/expected/forward_${BASENAME}.txt" ]; then
         echo -e "${YELLOW}Comparing forwarding results...${NC}"
-        diff "outputfiles/forward_${BASENAME}.txt" "outputfiles/actual/forward_${BASENAME}.txt" > /dev/null
+        diff "outputfiles/expected/forward_${BASENAME}.txt" "outputfiles/actual/forward_${BASENAME}.txt" > /dev/null
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✅ Forwarding test passed!${NC}"
         else
             echo -e "${RED}❌ Forwarding test failed. See differences:${NC}"
-            diff "outputfiles/forward_${BASENAME}.txt" "outputfiles/actual/forward_${BASENAME}.txt" | head -n 10
+            diff "outputfiles/expected/forward_${BASENAME}.txt" "outputfiles/actual/forward_${BASENAME}.txt" | head -n 10
         fi
     else
         echo -e "${YELLOW}No expected output file for forwarding test.${NC}"
     fi
 done
 
-echo -e "\n${GREEN}All tests have been executed!${NC}"
+echo -e "\n${GREEN} All tests have been executed!  ${NC}"
 echo -e "${YELLOW}Output files are available in outputfiles/actual/${NC}"
-
-# Create a summary
-echo -e "\n${YELLOW}==== Test Summary ====${NC}"
-echo "Instructions executed for each test:"
-for TEST_FILE in $TEST_FILES; do
-    BASENAME=$(basename "$TEST_FILE" .txt)
-    STAGE_COUNT=$(grep -c ";" "outputfiles/actual/forward_${BASENAME}.txt")
-    echo -e "${BASENAME}: ${STAGE_COUNT} pipeline stages"
-done
