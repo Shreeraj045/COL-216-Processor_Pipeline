@@ -1,0 +1,10 @@
+0x00300093 addi x1 x0 3        # x1 = 3
+0x00500113 addi x2 x0 5        # x2 = 5
+0x00112023 sw x1 0(x2)         # Store x1 at address x2 (5)
+0x0051a183 lw x3 5(x3)         # Load from address x3+5 (uninit+5) into x3
+0x003181b3 add x3 x3 x3        # x3 = x3 + x3 (load-use hazard)
+0x00319463 bne x3 x3 8         # Branch if x3 != x3 (shouldn't branch, depends on previous)
+0x00122023 sw x1 0(x4)         # Store x1 at address x4 (uninit)
+0x00220233 add x4 x4 x2        # x4 = x4 + x2 (depends on uninit x4)
+0x00320463 beq x4 x2 8         # Branch if x4 == x2 (depends on previous)
+0x00100293 addi x5 x0 1        # x5 = 1
