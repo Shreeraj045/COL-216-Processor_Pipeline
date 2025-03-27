@@ -88,16 +88,16 @@ void Processor::stageIF() {
     ifId.instruction = std::make_shared<Instruction>(instr);
     ifId.pc = pc;
     //print instruciton with cycle count 
-    std::string instrText = stripComments(instr.getAssembly());
-    std::cout<<"************************************************"<<std::endl;
-    std::cout<<"Instruction at IF: "<<instrText<<"cycle"<<cycleCount<<std::endl;
-    std::cout<<"************************************************"<<std::endl;
+    // std::string instrText = stripComments(instr.getAssembly());
+    // std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"Instruction at IF: "<<instrText<<"cycle"<<cycleCount<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
 
     // Increment PC
     pc += 4;
 
     if (tibt) {
-        std::cout<<"branch taken to pc: "<<btpc<<std::endl;
+        // std::cout<<"branch taken to pc: "<<btpc<<std::endl;
         ifId.clear();
         tibt = false ; 
         pc = btpc;
@@ -170,7 +170,7 @@ void Processor::stageID() {
         switch (funct3) {
             case 0x0: // BEQ
                 idEx.branchTaken = (rs1Val == rs2Val);
-                std::cout<<"BEQ with rs1Val: "<<rs1Val<<" rs2Val: "<<rs2Val<<std::endl;
+                // std::cout<<"BEQ with rs1Val: "<<rs1Val<<" rs2Val: "<<rs2Val<<std::endl;
                 break;
             case 0x1: // BNE
                 idEx.branchTaken = (rs1Val != rs2Val);
@@ -200,22 +200,22 @@ void Processor::stageID() {
         // pc = idEx.branchTarget;
         btpc = idEx.branchTarget;
         //print which instrcuton just took place in ID stage 
-        auto instr = memory.getInstruction(idEx.pc);
-        std::string instrText = stripComments(instr.getAssembly());
-        std::cout<<"Instruction at pc: "<<instrText<<std::endl;
-        std::cout<<"BTPC"<<btpc<<std::endl;
+        // auto instr = memory.getInstruction(idEx.pc);
+        // std::string instrText = stripComments(instr.getAssembly());
+        // std::cout<<"Instruction at pc: "<<instrText<<std::endl;
+        // std::cout<<"BTPC"<<btpc<<std::endl;
         //print instryuction of btpc pc 
-        auto kinstr = memory.getInstruction(btpc);
-        std::string kinstrText = stripComments(kinstr.getAssembly());
-        std::cout<<"Instruction at btpc: "<<kinstrText<<std::endl;
+        // auto kinstr = memory.getInstruction(btpc);
+        // std::string kinstrText = stripComments(kinstr.getAssembly());
+        // std::cout<<"Instruction at btpc: "<<kinstrText<<std::endl;
         tibt = true ; 
     }
     //print jusst finsihed ID instruciton with cycle count 
-    auto cinstr = memory.getInstruction(idEx.pc);
-    std::string cinstrText = stripComments(cinstr.getAssembly());
-    std::cout<<"************************************************"<<std::endl;
-    std::cout<<"Instruction at ID: "<<cinstrText<<"cycle"<<cycleCount<<std::endl;
-    std::cout<<"************************************************"<<std::endl;
+    // auto cinstr = memory.getInstruction(idEx.pc);
+    // std::string cinstrText = stripComments(cinstr.getAssembly());
+    // std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"Instruction at ID: "<<cinstrText<<"cycle"<<cycleCount<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
 
     
 }
@@ -244,37 +244,119 @@ void Processor::stageEX() {
         int funct3 = instr->getFunct3();
         int funct7 = instr->getFunct7();
         
-        switch (funct3) {
-            case 0x0: // ADD/SUB
-                if (funct7 == 0x00)
-                    aluResult = idEx.rs1Value + idEx.rs2Value; // ADD
-                else if (funct7 == 0x20)
-                    aluResult = idEx.rs1Value - idEx.rs2Value; // SUB
-                break;
-            case 0x1: // SLL
-                aluResult = idEx.rs1Value << (idEx.rs2Value & 0x1F);
-                break;
-            case 0x2: // SLT
-                aluResult = (idEx.rs1Value < idEx.rs2Value) ? 1 : 0;
-                break;
-            case 0x3: // SLTU
-                aluResult = ((unsigned int)idEx.rs1Value < (unsigned int)idEx.rs2Value) ? 1 : 0;
-                break;
-            case 0x4: // XOR
-                aluResult = idEx.rs1Value ^ idEx.rs2Value;
-                break;
-            case 0x5: // SRL/SRA
-                if (funct7 == 0x00)
-                    aluResult = (unsigned int)idEx.rs1Value >> (idEx.rs2Value & 0x1F); // SRL
-                else if (funct7 == 0x20)
-                    aluResult = idEx.rs1Value >> (idEx.rs2Value & 0x1F); // SRA
-                break;
-            case 0x6: // OR
-                aluResult = idEx.rs1Value | idEx.rs2Value;
-                break;
-            case 0x7: // AND
-                aluResult = idEx.rs1Value & idEx.rs2Value;
-                break;
+        // Check if this is an M-extension instruction
+        if (funct7 == 0x01) {
+            // M-extension instructions (MUL/DIV/REM)
+            switch (funct3) {
+                case 0x0: // MUL
+                    aluResult = idEx.rs1Value * idEx.rs2Value;
+                    break;
+                case 0x1: // MULH
+                    // Signed * Signed -> High bits
+                    {
+                        int64_t a = static_cast<int64_t>(idEx.rs1Value);
+                        int64_t b = static_cast<int64_t>(idEx.rs2Value);
+                        int64_t result = a * b;
+                        aluResult = static_cast<int>(result >> 32);
+                    }
+                    break;
+                case 0x2: // MULHSU
+                    // Signed * Unsigned -> High bits
+                    {
+                        int64_t a = static_cast<int64_t>(idEx.rs1Value);
+                        uint64_t b = static_cast<uint64_t>(static_cast<uint32_t>(idEx.rs2Value));
+                        int64_t result = a * b;
+                        aluResult = static_cast<int>(result >> 32);
+                    }
+                    break;
+                case 0x3: // MULHU
+                    // Unsigned * Unsigned -> High bits
+                    {
+                        uint64_t a = static_cast<uint64_t>(static_cast<uint32_t>(idEx.rs1Value));
+                        uint64_t b = static_cast<uint64_t>(static_cast<uint32_t>(idEx.rs2Value));
+                        uint64_t result = a * b;
+                        aluResult = static_cast<int>(result >> 32);
+                    }
+                    break;
+                case 0x4: // DIV
+                    // Check for division by zero
+                    if (idEx.rs2Value == 0) {
+                        aluResult = -1; // As per spec: division by zero returns -1
+                    } 
+                    // Check for overflow condition (INT_MIN / -1)
+                    else if (idEx.rs1Value == INT_MIN && idEx.rs2Value == -1) {
+                        aluResult = INT_MIN; // Return INT_MIN as specified
+                    } 
+                    else {
+                        aluResult = idEx.rs1Value / idEx.rs2Value;
+                    }
+                    break;
+                case 0x5: // DIVU
+                    // Unsigned division
+                    if (idEx.rs2Value == 0) {
+                        aluResult = 0xFFFFFFFF; // Max unsigned value for division by zero
+                    } else {
+                        aluResult = static_cast<int>((static_cast<uint32_t>(idEx.rs1Value) / 
+                                                     static_cast<uint32_t>(idEx.rs2Value)));
+                    }
+                    break;
+                case 0x6: // REM
+                    // Remainder of signed division
+                    if (idEx.rs2Value == 0) {
+                        aluResult = idEx.rs1Value; // Remainder of x/0 is x
+                    } 
+                    // Handle overflow case (INT_MIN % -1)
+                    else if (idEx.rs1Value == INT_MIN && idEx.rs2Value == -1) {
+                        aluResult = 0; // Remainder is 0 in this case
+                    } 
+                    else {
+                        aluResult = idEx.rs1Value % idEx.rs2Value;
+                    }
+                    break;
+                case 0x7: // REMU
+                    // Remainder of unsigned division
+                    if (idEx.rs2Value == 0) {
+                        aluResult = idEx.rs1Value; // Remainder of x/0 is x
+                    } else {
+                        aluResult = static_cast<int>((static_cast<uint32_t>(idEx.rs1Value) % 
+                                                     static_cast<uint32_t>(idEx.rs2Value)));
+                    }
+                    break;
+            }
+        } else {
+            // Regular R-type instructions
+            switch (funct3) {
+                case 0x0: // ADD/SUB
+                    if (funct7 == 0x00)
+                        aluResult = idEx.rs1Value + idEx.rs2Value; // ADD
+                    else if (funct7 == 0x20)
+                        aluResult = idEx.rs1Value - idEx.rs2Value; // SUB
+                    break;
+                case 0x1: // SLL
+                    aluResult = idEx.rs1Value << (idEx.rs2Value & 0x1F);
+                    break;
+                case 0x2: // SLT
+                    aluResult = (idEx.rs1Value < idEx.rs2Value) ? 1 : 0;
+                    break;
+                case 0x3: // SLTU
+                    aluResult = ((unsigned int)idEx.rs1Value < (unsigned int)idEx.rs2Value) ? 1 : 0;
+                    break;
+                case 0x4: // XOR
+                    aluResult = idEx.rs1Value ^ idEx.rs2Value;
+                    break;
+                case 0x5: // SRL/SRA
+                    if (funct7 == 0x00)
+                        aluResult = (unsigned int)idEx.rs1Value >> (idEx.rs2Value & 0x1F); // SRL
+                    else if (funct7 == 0x20)
+                        aluResult = idEx.rs1Value >> (idEx.rs2Value & 0x1F); // SRA
+                    break;
+                case 0x6: // OR
+                    aluResult = idEx.rs1Value | idEx.rs2Value;
+                    break;
+                case 0x7: // AND
+                    aluResult = idEx.rs1Value & idEx.rs2Value;
+                    break;
+            }
         }
     } else if (instr->isIType()) {
         int funct3 = instr->getFunct3();
@@ -335,10 +417,10 @@ void Processor::stageEX() {
     
     exMem.aluResult = aluResult;
 
-    auto kinstr = memory.getInstruction(idEx.pc);
-    std::cout<<"************************************************"<<std::endl;
-    std::cout<<"Instruction at EX: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
-    std::cout<<"************************************************"<<std::endl;
+    // auto kinstr = memory.getInstruction(idEx.pc);
+    // std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"Instruction at EX: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
 }
 
 void Processor::stageMEM() {
@@ -395,10 +477,10 @@ void Processor::stageMEM() {
         }
     }
     //prit just finished MEM instruction with cycle count
-    auto kinstr = memory.getInstruction(exMem.pc);
-    std::cout<<"************************************************"<<std::endl;
-    std::cout<<"Instruction at MEM: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
-    std::cout<<"************************************************"<<std::endl;
+    // auto kinstr = memory.getInstruction(exMem.pc);
+    // std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"Instruction at MEM: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
 
 }
 
@@ -410,9 +492,9 @@ void Processor::stageWB() {
     
     auto instr = memWb.instruction;
 
-    std::cout<<"************************************************"<<std::endl;
-    std::cout<<"Instruction at WB: "<<stripComments(instr->getAssembly())<<"cycle"<<cycleCount<<std::endl;
-    std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
+    // std::cout<<"Instruction at WB: "<<stripComments(instr->getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    // std::cout<<"************************************************"<<std::endl;
 
 
     int rdNum = instr->getRd();

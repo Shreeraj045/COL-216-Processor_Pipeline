@@ -42,6 +42,9 @@ public:
     bool isUType() const;
     bool isJType() const;
     
+    // Check if instruction is from RV32M extension
+    bool isRV32M() const;
+    
     // Specific instruction identification
     bool isLoad() const;
     bool isStore() const;
