@@ -1,5 +1,5 @@
-0x00400093        addi x1 x0 4
-0x00a00393        addi x7 x0 10
-0x0070f463        bgeu x1 x7 8
-0x00100413        addi x8 x0 1
-0x00008067        jalr x0 x1 0
+00400093 addi x1, x0, 4      # x1 = 4  
+00A00393 addi x7, x0, 10     # x7 = 10  
+0070F463 bgeu x1, x7, 8      # Branch if x1 >= x7 (unsigned comparison, won't branch)  
+00100413 addi x8, x0, 1      # x8 = 1 (executed since branch is not taken)  
+00008067 jalr x0, x1, 0      # Jump to address in x1 (PC = x1)  

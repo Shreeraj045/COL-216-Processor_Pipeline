@@ -1,9 +1,9 @@
-0x00500a93        addi x21 x0 5
-0x00100293        addi x5 x0 1
-0x00502023        sw x5 0 x0
-0x00002b03        lw x22 0 x0
-0x00030463        beq x6 x0 8
-0x001f8f93        addi x31 x31 1
-0x015f8463        beq x31 x21 8
-0xff9ff06f        jal x0 -8
-0x01f02223        sw x31 4 x0
+00500A93 addi x21, x0, 5     # x21 = 5  
+00100293 addi x5, x0, 1      # x5 = 1  
+00502023 sw x5, 0(x0)        # Store x5 (1) at memory[0]  
+00002B03 lw x22, 0(x0)       # Load from memory[0] into x22 (should be 1)  
+00030463 beq x6, x0, 8       # Branch if x6 == 0 (depends on x6 value)  
+001F8F93 addi x31, x31, 1    # Increment x31 by 1  
+015F8463 beq x31, x21, 8     # Branch if x31 == x21 (loop until x31 = 5)  
+FF9FF06F jal x0, -8          # Jump back 8 bytes (looping)  
+01F02223 sw x31, 4(x0)       # Store x31 at memory[4]  

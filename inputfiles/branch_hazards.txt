@@ -1,11 +1,11 @@
-0x00300093 addi x1 x0 3        # x1 = 3
-0x00500113 addi x2 x0 5        # x2 = 5
-0x00208463 beq x1 x2 8         # Branch if x1 == x2 (shouldn't branch)
-0x00100193 addi x3 x0 1        # x3 = 1 (executed)
-0x00100213 addi x4 x0 1        # x4 = 1 (executed)
-0x00310463 beq x2 x3 8         # Branch if x2 == x3 (shouldn't branch)
-0x00100293 addi x5 x0 1        # x5 = 1 (executed)
-0x00000013 addi x0 x0 0        # NOP
-0x0020c463 blt x1 x2 8         # Branch if x1 < x2 (should branch)
-0x00100313 addi x6 x0 1        # x6 = 1 (should be skipped)
-0x00100393 addi x7 x0 1        # x7 = 1 (executed after branch)
+00300093 addi x1 x0 3        # x1 = 3
+00500113 addi x2 x0 5        # x2 = 5
+00208463 beq x1 x2 8         # Branch if x1 == x2 (shouldn't branch)
+00100193 addi x3 x0 1        # x3 = 1 (executed)
+00100213 addi x4 x0 1        # x4 = 1 (executed)
+00310463 beq x2 x3 8         # Branch if x2 == x3 (shouldn't branch)
+00100293 addi x5 x0 1        # x5 = 1 (executed)
+00000013 addi x0 x0 0        # NOP
+0020c463 blt x1 x2 8         # Branch if x1 < x2 (should branch)
+00100313 addi x6 x0 1        # x6 = 1 (should be skipped)
+00100393 addi x7 x0 1        # x7 = 1 (executed after branch)
