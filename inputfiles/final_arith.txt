@@ -10,5 +10,5 @@ FF618213 addi x4, x3, -10     # x4 = x3 - 10 = 20
 10002403 lw x8, 256(x0)       # Load from memory[256] to x8
 022082B3 mul x5, x1, x2       # x5 = x1 * x2 = 50
 0020C2B3 div x5, x5, x1       # x5 = x5 / x1 = 10
-004000EF jal x1, 8            # Jump forward, skip next instruction
+008000EF jal x1, 8            # Jump forward, skip next instruction
 00600313 addi x6, x0, 6       # x6 = 6 (executed after jump)
