@@ -17,6 +17,11 @@ void Processor::loadProgram(const std::string& filename) {
         auto instr = memory.getInstruction(instrAddr);
         std::string instrText = stripComments(instr.getAssembly());
         
+        // Skip blank lines
+        if (instrText.empty()) {
+            continue;
+        }
+        
         // Add all instructions to the tracking table without any stages yet
         InstructionTracker newTracker;
         newTracker.assembly = instrText;
