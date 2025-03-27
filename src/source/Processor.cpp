@@ -575,29 +575,26 @@ void Processor::printPipelineDiagram() {
                   return a.pc < b.pc;
               });
     
-    // Print each instruction with its pipeline stages
+    // Print ALL instructions regardless of whether they entered the pipeline
     for (const auto& tracker : sortedTrackers) {
-        // Only show instructions that entered the pipeline
-        if (tracker.firstCycle != -1) {
-            // Format instruction with PC
-            std::ostringstream instrWithPC;
-            instrWithPC << tracker.assembly << " (0x" << std::hex << tracker.pc << ")";
-            std::cout << std::left << std::setw(maxInstrLength) << instrWithPC.str();
+        // Format instruction with PC
+        std::ostringstream instrWithPC;
+        instrWithPC << tracker.assembly << " (0x" << std::hex << tracker.pc << ")";
+        std::cout << std::left << std::setw(maxInstrLength) << instrWithPC.str();
+        
+        // Add each stage for each cycle
+        for (size_t i = 0; i < static_cast<size_t>(cycleCount); i++) {
+            std::string stageOutput = "| ";
             
-            // Add each stage for each cycle
-            for (size_t i = 0; i < static_cast<size_t>(cycleCount); i++) {
-                std::string stageOutput = "| ";
-                
-                if (i < tracker.stages.size()) {
-                    stageOutput += tracker.stages[i];
-                } else {
-                    stageOutput += " ";
-                }
-                
-                std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
+            if (tracker.firstCycle != -1 && i < tracker.stages.size()) {
+                stageOutput += tracker.stages[i];
+            } else {
+                stageOutput += " ";
             }
-            std::cout << std::endl;
+            
+            std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
         }
+        std::cout << std::endl;
     }
 }
 
