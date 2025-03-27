@@ -2,9 +2,9 @@
 0x01028293        addi x5 x5 16
 0x00000313        addi x6 x0 0
 0x0002c503        lbu x10 0 x5
-0x00050c63        beq x10 x0 24
+0x00050863        beq x10 x0 16
 0x00130313        addi x6 x6 1
 0x00128293        addi x5 x5 1
-0xfe1ff06f        jal x0 -32
+0xff1ff06f        jal x0 -16
 0x00030513        addi x10 x6 0
 0x00008067        jalr x0 x1 0

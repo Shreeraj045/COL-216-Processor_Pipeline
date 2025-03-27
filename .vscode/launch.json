@@ -6,7 +6,7 @@
 		"request": "launch",
 		"name": "Debug Program",
 		"program": "${workspaceFolder}/src/${input:executableName}",
-		"args": ["${workspaceFolder}/inputfiles/ripes_input.txt", "40"],
+		"args": ["${workspaceFolder}/inputfiles/ripes_2.txt", "40"],
 		"cwd": "${workspaceFolder}",
 		 "preLaunchTask": "build"
 	  }
