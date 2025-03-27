@@ -2,7 +2,7 @@
 #include <string>
 #include <cstdint>
 #include <iostream>
-using namespace as std;
+using namespace std;
 class Instruction {
 private:
     uint32_t machineCode;

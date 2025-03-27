@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <sstream> 
 #include <climits>
-using namespace as std;
+using namespace std;
 class Processor {
 protected:
     // Processor state

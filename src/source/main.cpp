@@ -1,6 +1,6 @@
 #include "../include/ForwardingProcessor.hpp"
 #include "../include/NonForwardingProcessor.hpp"
-using namespace as std;
+using namespace std;
 void printUsage(const string& progName) {
     cerr << "Usage: " << progName << " <instruction_file> <cycle_count>\n";
 }

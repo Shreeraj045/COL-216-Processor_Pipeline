@@ -1,5 +1,5 @@
 #include "../include/Processor.hpp"
-using namespace as std;
+using namespace std;
 Processor::Processor() : pc(0), cycleCount(0), instructionCount(0), stall(false) {
 }
 

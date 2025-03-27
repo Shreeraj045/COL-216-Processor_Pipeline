@@ -1,5 +1,5 @@
 #include "../include/Memory.hpp"
-using namespace as std;
+using namespace std;
 
 Memory::Memory(size_t size) : data(size, 0) {
 }

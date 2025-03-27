@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-using namespace as std;
+using namespace std;
 
 class RegisterFile {
 private:

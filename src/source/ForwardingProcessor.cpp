@@ -1,5 +1,5 @@
 #include "../include/ForwardingProcessor.hpp"
-using namespace as std;
+using namespace std;
 
 ForwardingProcessor::ForwardingProcessor() : Processor() {
 }

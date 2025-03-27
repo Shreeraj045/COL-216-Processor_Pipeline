@@ -1,7 +1,7 @@
 #pragma once
 #include "Instruction.hpp"
 #include <memory>
-using namespace as std;
+using namespace std;
 struct PipelineRegister {
     bool valid = false;
     shared_ptr<Instruction> instruction = nullptr;

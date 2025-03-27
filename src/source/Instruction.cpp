@@ -1,5 +1,5 @@
 #include "../include/Instruction.hpp"
-using namespace as std;
+using namespace std;
 
 Instruction::Instruction() : machineCode(0), assembly("NOP") {
     decode();

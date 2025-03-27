@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-using namespace as std;
+using namespace std;
 class Memory {
 private:
     vector<uint8_t> data;
