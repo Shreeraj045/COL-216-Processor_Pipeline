@@ -12,7 +12,6 @@ void ForwardingProcessor::detectHazards() {
     if (!ifId.valid) {
         return;
     }
-    
     auto idInstr = ifId.instruction;
     
     // CASE 1: Load-use hazard - when we read a value that's being written in memory
@@ -35,14 +34,12 @@ void ForwardingProcessor::stageID() {
         idEx.clear();
         return;
     }
-    
     // Check if we're stalled - if so, don't advance instruction from ID to EX
     if (stall) {
         // Insert a bubble in ID/EX
         idEx.clear(); 
         return;
     }
-    
     // Copy the instruction and PC from IF/ID to ID/EX
     idEx.instruction = ifId.instruction;
     idEx.pc = ifId.pc;
@@ -72,7 +69,6 @@ void ForwardingProcessor::stageEX() {
         exMem.clear();
         return;
     }
-    
     // copy values from ID/EX to EX/MEM
     exMem.instruction = idEx.instruction;
     exMem.pc = idEx.pc;
@@ -104,7 +100,6 @@ void ForwardingProcessor::stageEX() {
             }
         }
     }
-        
     // Store the possibly forwarded values
     exMem.rs1Value = rs1Value;
     exMem.rs2Value = rs2Value;
@@ -149,7 +144,6 @@ void ForwardingProcessor::stageEX() {
             // Branch is taken, flush pipeline and redirect
             ifId.clear();
             idEx.clear();
-            
             // Set new PC for next IF
             pc = exMem.branchTarget;
         }
