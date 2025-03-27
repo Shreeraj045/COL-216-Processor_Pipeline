@@ -1,8 +1,5 @@
 #include "../include/Memory.hpp"
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <algorithm>
+
 
 Memory::Memory(size_t size) : data(size, 0) {
 }

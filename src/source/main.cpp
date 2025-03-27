@@ -1,5 +1,3 @@
-#include <iostream>
-#include <string>
 #include "../include/ForwardingProcessor.hpp"
 #include "../include/NonForwardingProcessor.hpp"
 

@@ -1,5 +1,5 @@
 #include "../include/Instruction.hpp"
-#include <iostream>
+
 
 Instruction::Instruction() : machineCode(0), assembly("NOP") {
     decode();

@@ -1,9 +1,5 @@
 #include "../include/Processor.hpp"
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <sstream> // Added this include
-#include <climits> // Added this include
+ 
 Processor::Processor() : pc(0), cycleCount(0), instructionCount(0), stall(false) {
 }
 
@@ -106,7 +102,6 @@ void Processor::stageIF() {
         ifId.clear();
         tibt = false ; 
         pc = btpc;
-        libt = true ; 
     }
 
 }
@@ -123,18 +118,7 @@ void Processor::stageID() {
         return; // Keep instruction in IF/ID
     }
     
-    // Copy the instruction and PC from IF/ID to ID/EX
-    //if previous instruction was branch taken then we need to flush the pipeline
-    // if (libt) {
-    //     std::cout<<"flushing the pipeline"<<std::endl;
-    //     std::cout<<"PC: "<<ifId.pc<<std::endl;
-    //     ifId.clear();
-    //     libt = false;
-    //     return;
-    // }
-    //print pc 
-    // std::cout<<"PC: "<<ifId.pc<<std::endl;
-    // std::cout<<"not flushing the pipeline"<<std::endl;
+
     idEx.instruction = ifId.instruction;
     idEx.pc = ifId.pc;
     idEx.valid = true;

@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <string>
 #include "Instruction.hpp"
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <algorithm>
 
 class Memory {
 private:

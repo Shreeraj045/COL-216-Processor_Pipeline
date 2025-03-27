@@ -5,13 +5,17 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <sstream> 
+#include <climits>
 
 class Processor {
 protected:
     // Processor state
     uint32_t pc;
     uint32_t btpc ; // last instruction branch taken target address 
-    bool libt ; //last instrcution branch taken or not 
     bool tibt ; //last instrcution branch taken or not 
     Memory memory;
     RegisterFile registers;
