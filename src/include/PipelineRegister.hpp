@@ -1,10 +1,10 @@
 #pragma once
 #include "Instruction.hpp"
 #include <memory>
-
+using namespace as std;
 struct PipelineRegister {
     bool valid = false;
-    std::shared_ptr<Instruction> instruction = nullptr;
+    shared_ptr<Instruction> instruction = nullptr;
     uint32_t pc = 0;
     int aluResult = 0;
     int readData = 0;

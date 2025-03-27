@@ -49,11 +49,11 @@ if (memWb.valid && memWb.instruction) {
         
         if (rs1 == memWbRd) {
             rs1Value = wbValue;
-            std::cout << "EX STAGE: Forwarded MEM/WB to rs1, new value=" << rs1Value << std::endl;
+            cout << "EX STAGE: Forwarded MEM/WB to rs1, new value=" << rs1Value << endl;
         }
         if (rs2 == memWbRd) {
             rs2Value = wbValue;
-            std::cout << "EX STAGE: Forwarded MEM/WB to rs2, new value=" << rs2Value << std::endl;
+            cout << "EX STAGE: Forwarded MEM/WB to rs2, new value=" << rs2Value << endl;
         }
     }
 }

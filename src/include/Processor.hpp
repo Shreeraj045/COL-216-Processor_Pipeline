@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <sstream> 
 #include <climits>
-
+using namespace as std;
 class Processor {
 protected:
     // Processor state
@@ -35,14 +35,14 @@ protected:
     
     // Structure to track instruction stages through all cycles
     struct InstructionTracker {
-        std::string assembly;      // Instruction text
+        string assembly;      // Instruction text
         uint32_t pc;               // Program counter value
         int firstCycle;            // First cycle when this instruction entered pipeline
-        std::vector<std::string> stages; // Modified to handle multiple stages per cycle
+        vector<string> stages; // Modified to handle multiple stages per cycle
     };
     
     // Table to track all instructions
-    std::vector<InstructionTracker> pipelineTable;
+    vector<InstructionTracker> pipelineTable;
     
     // Pipeline stage implementation
     virtual void stageIF();
@@ -58,13 +58,13 @@ protected:
     void updatePipelineTable();
     
     // Helper to add or update instruction in table
-    void updateOrAddInstruction(const std::string& assembly, const std::string& stage);
+    void updateOrAddInstruction(const string& assembly, const string& stage);
     
     // New method to update instruction stage based on PC
-    void updateInstructionStage(uint32_t pc, const std::string& stage);
+    void updateInstructionStage(uint32_t pc, const string& stage);
     
     // Helper function to strip comments from assembly code
-    std::string stripComments(const std::string& assembly);
+    string stripComments(const string& assembly);
     
     
 public:
@@ -72,7 +72,7 @@ public:
     virtual ~Processor() = default;
     
     // Initialize the processor with instructions from a file
-    void loadProgram(const std::string& filename);
+    void loadProgram(const string& filename);
     
     // Run the simulation for specified number of cycles
     void run(int cycles);

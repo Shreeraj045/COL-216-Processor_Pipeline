@@ -1,9 +1,10 @@
 #pragma once
 #include <array>
+using namespace as std;
 
 class RegisterFile {
 private:
-    std::array<int, 32> registers;
+    array<int, 32> registers;
     
 public:
     RegisterFile();

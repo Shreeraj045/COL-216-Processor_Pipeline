@@ -1,6 +1,6 @@
 #pragma once
 #include "Processor.hpp"
-
+using namespace as std;
 class NonForwardingProcessor : public Processor {
 protected:
     // Override hazard detection for stall implementation

@@ -1,5 +1,5 @@
 #include "../include/RegisterFile.hpp"
-
+using namespace as std;
 RegisterFile::RegisterFile() {
     reset();
 }

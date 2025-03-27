@@ -1,5 +1,5 @@
 #include "../include/NonForwardingProcessor.hpp"
-
+using namespace as std;
 NonForwardingProcessor::NonForwardingProcessor() : Processor() {
 }
 

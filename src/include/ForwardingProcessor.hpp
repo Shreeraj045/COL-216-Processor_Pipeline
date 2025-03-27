@@ -1,6 +1,6 @@
 #pragma once
 #include "Processor.hpp"
-
+using namespace as std;
 class ForwardingProcessor : public Processor {
 protected:
     // Override hazard detection to implement forwarding

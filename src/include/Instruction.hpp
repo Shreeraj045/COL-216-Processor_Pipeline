@@ -2,11 +2,11 @@
 #include <string>
 #include <cstdint>
 #include <iostream>
-
+using namespace as std;
 class Instruction {
 private:
     uint32_t machineCode;
-    std::string assembly;
+    string assembly;
     
     // Decoded fields
     int opcode;
@@ -19,11 +19,11 @@ private:
     
 public:
     Instruction();
-    Instruction(uint32_t machineCode, const std::string& assembly = "");
+    Instruction(uint32_t machineCode, const string& assembly = "");
     
     // Getters
     uint32_t getMachineCode() const { return machineCode; }
-    std::string getAssembly() const { return assembly; }
+    string getAssembly() const { return assembly; }
     int getOpcode() const { return opcode; }
     int getRd() const { return rd; }
     int getRs1() const { return rs1; }

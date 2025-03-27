@@ -1,11 +1,11 @@
 #include "../include/Instruction.hpp"
-
+using namespace as std;
 
 Instruction::Instruction() : machineCode(0), assembly("NOP") {
     decode();
 }
 
-Instruction::Instruction(uint32_t code, const std::string& asm_str) 
+Instruction::Instruction(uint32_t code, const string& asm_str) 
     : machineCode(code), assembly(asm_str) {
     decode();
 }

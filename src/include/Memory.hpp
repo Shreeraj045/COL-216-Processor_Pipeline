@@ -7,11 +7,11 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-
+using namespace as std;
 class Memory {
 private:
-    std::vector<uint8_t> data;
-    std::vector<Instruction> instructions;
+    vector<uint8_t> data;
+    vector<Instruction> instructions;
     
 public:
     Memory(size_t size = 1024*1024);  // Default 1MB memory
@@ -26,7 +26,7 @@ public:
     void writeWord(uint32_t address, uint32_t value);
     
     // Instruction memory functions
-    void loadInstructions(const std::string& filename);
+    void loadInstructions(const string& filename);
     Instruction getInstruction(uint32_t pc) const;
     size_t getInstructionCount() const { return instructions.size(); }
     
