@@ -5,12 +5,13 @@ Instruction::Instruction() : machineCode(0), assembly("NOP") {
     decode();
 }
 
-Instruction::Instruction(uint32_t code, const string& asm_str) 
-    : machineCode(code), assembly(asm_str) {
+Instruction::Instruction(uint32_t code, const string& asm_str) : machineCode(code), assembly(asm_str) {
     decode();
 }
 
 void Instruction::decode() {
+    // get different vals from machine code
+    // lower 7 bits 1 in 0x7F, 5 bits 1 for 0x1F
     opcode = machineCode & 0x7F;
     rd = (machineCode >> 7) & 0x1F;
     funct3 = (machineCode >> 12) & 0x7;
@@ -23,17 +24,14 @@ void Instruction::decode() {
     if (isRType()) {
         imm = 0; // No immediate for R-type
     } else if (isIType()) {
-        // I-type immediate: sign-extended 12-bit value
         imm = (int32_t)(machineCode & 0xFFF00000) >> 20;
         // Sign extension
         if (imm & 0x800) {
             imm |= 0xFFFFF000;
         }
     } else if (isSType()) {
-        // S-type immediate: sign-extended concatenation of bits
         imm = ((machineCode >> 25) & 0x7F) << 5;
         imm |= ((machineCode >> 7) & 0x1F);
-        // Sign extension
         if (imm & 0x800) {
             imm |= 0xFFFFF000;
         }
@@ -43,13 +41,9 @@ void Instruction::decode() {
         imm |= ((machineCode >> 7) & 0x1) << 11;
         imm |= ((machineCode >> 25) & 0x3F) << 5;
         imm |= ((machineCode >> 8) & 0xF) << 1;
-        // Sign extension
         if (imm & 0x1000) {
             imm |= 0xFFFFE000;
         }
-    
-
-
     } else if (isUType()) {
         // U-type immediate: upper 20 bits
         imm = (machineCode & 0xFFFFF000);
@@ -59,7 +53,6 @@ void Instruction::decode() {
         imm |= ((machineCode >> 12) & 0xFF) << 12;
         imm |= ((machineCode >> 20) & 0x1) << 11;
         imm |= ((machineCode >> 21) & 0x3FF) << 1;
-        // Sign extension
         if (imm & 0x100000) {
             imm |= 0xFFE00000;
         }
@@ -76,38 +69,33 @@ bool Instruction::isRV32M() const {
 }
 
 bool Instruction::isIType() const {
-    return (opcode == 0x13 || // Immediate ALU operations
-            opcode == 0x03 || // Load operations
-            opcode == 0x67);  // JALR
+    // Immediate ALU, Load, JALR operations
+    return (opcode == 0x13 || opcode == 0x03 || opcode == 0x67);  
 }
 
 bool Instruction::isSType() const {
-    return (opcode == 0x23);  // Store operations
+    // Store operations
+    return (opcode == 0x23);  
 }
 
 bool Instruction::isBType() const {
-    return (opcode == 0x63);  // Branch operations
+    // Branch operations
+    return (opcode == 0x63);
 }
 
 bool Instruction::isUType() const {
-    return (opcode == 0x37 || // LUI
-            opcode == 0x17);  // AUIPC
+    // lui, auipc
+    return (opcode == 0x37 || opcode == 0x17); 
 }
 
 bool Instruction::isJType() const {
-    return (opcode == 0x6F);  // JAL
+    // Jal
+    return (opcode == 0x6F);  
 }
 
 bool Instruction::isLoad() const {
-    return (opcode == 0x03);  // Load operations
-}
-
-bool Instruction::isStore() const {
-    return (opcode == 0x23);  // Store operations
-}
-
-bool Instruction::isBranch() const {
-    return isBType();
+    // Load operations
+    return (opcode == 0x03);  
 }
 
 bool Instruction::isJump() const {

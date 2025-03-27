@@ -129,8 +129,8 @@ void Processor::stageID() {
     idEx.rs2Value = registers.read(instr->getRs2());
     
     // Check if this is a branch instruction and calculate target
-    if (instr->isBranch() || instr->isJump()) {
-        idEx.isBranch = true;
+    if (instr->isBType() || instr->isJump()) {
+        idEx.isBType = true;
         
         // Different branch/jump types have different target calculations
         if (instr->isBType()) {
@@ -146,7 +146,7 @@ void Processor::stageID() {
             idEx.branchTaken = true; // JALR always takes the jump
         }
     } else {
-        idEx.isBranch = false;
+        idEx.isBType = false;
         idEx.branchTaken = false;
     }
     
@@ -183,7 +183,7 @@ void Processor::stageID() {
     }
     
     // Handle branch prediction (simple always-not-taken strategy)
-    if (idEx.isBranch && idEx.branchTaken) {
+    if (idEx.isBType && idEx.branchTaken) {
         // We're predicting not taken but branch is taken, flush and redirect
         ifId.clear();
         // pc = idEx.branchTarget;
@@ -221,7 +221,7 @@ void Processor::stageEX() {
     exMem.valid = true;
     exMem.rs1Value = idEx.rs1Value;
     exMem.rs2Value = idEx.rs2Value;
-    exMem.isBranch = idEx.isBranch;
+    exMem.isBType = idEx.isBType;
     exMem.branchTaken = idEx.branchTaken;
     exMem.branchTarget = idEx.branchTarget;
     
@@ -448,7 +448,7 @@ void Processor::stageMEM() {
                 memWb.readData = memory.readHalf(address);
                 break;
         }
-    } else if (instr->isStore()) {
+    } else if (instr->isSType()) {
         int funct3 = instr->getFunct3();
         uint32_t address = exMem.aluResult;
         int value = exMem.rs2Value;

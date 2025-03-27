@@ -10,7 +10,7 @@ struct PipelineRegister {
     int readData = 0;
     int rs1Value = 0;
     int rs2Value = 0;
-    bool isBranch = false;
+    bool isBType = false;
     bool branchTaken = false;
     uint32_t branchTarget = 0;
     
@@ -22,7 +22,7 @@ struct PipelineRegister {
         readData = 0;
         rs1Value = 0;
         rs2Value = 0;
-        isBranch = false;
+        isBType = false;
         branchTaken = false;
         branchTarget = 0;
     }

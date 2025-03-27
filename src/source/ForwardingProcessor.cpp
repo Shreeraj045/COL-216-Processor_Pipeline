@@ -66,10 +66,10 @@ void ForwardingProcessor::stageID() {
     idEx.rs2Value = rs2Value;
     
     // Tag if this is a branch instruction - but don't evaluate it yet
-    if (instr->isBranch() || instr->isJump()) {
-        idEx.isBranch = true;
+    if (instr->isBType() || instr->isJump()) {
+        idEx.isBType = true;
     } else {
-        idEx.isBranch = false;
+        idEx.isBType = false;
     }
     
     // Print debug information for the ID stage
@@ -90,7 +90,7 @@ void ForwardingProcessor::stageEX() {
     exMem.instruction = idEx.instruction;
     exMem.pc = idEx.pc;
     exMem.valid = true;
-    exMem.isBranch = idEx.isBranch;
+    exMem.isBType = idEx.isBType;
     
     // Add debug info for jump instruction identification
     auto instr = exMem.instruction;
@@ -157,7 +157,7 @@ void ForwardingProcessor::stageEX() {
     int aluResult = 0;
     
     // NEW BRANCH HANDLING: Evaluate branches in EX with forwarded values
-    if (instr->isBranch()) {
+    if (instr->isBType()) {
         // Calculate branch target
         exMem.branchTarget = idEx.pc + instr->getImm();
         
@@ -405,7 +405,7 @@ void ForwardingProcessor::stageEX() {
     
     exMem.aluResult = aluResult;
     //if branch and brach taken set btpc as new pc ; 
-    if(exMem.isBranch && exMem.branchTaken){
+    if(exMem.isBType && exMem.branchTaken){
         btpc = exMem.branchTarget;
         tibt = true;
     }

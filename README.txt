@@ -70,7 +70,7 @@ Key decision points:
 
 Implementation in ForwardingProcessor::stageEX():
 ```cpp
-if (instr->isBranch()) {
+if (instr->isBType()) {
     // Calculate branch target
     exMem.branchTarget = idEx.pc + instr->getImm();
     

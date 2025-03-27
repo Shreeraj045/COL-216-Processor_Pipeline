@@ -48,8 +48,6 @@ public:
     
     // Specific instruction identification
     bool isLoad() const;
-    bool isStore() const;
-    bool isBranch() const;
     bool isJump() const;
     bool isALU() const;
 };
