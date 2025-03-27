@@ -27,7 +27,7 @@ void ForwardingProcessor::detectHazards() {
             // Load-use hazard detected, stall the pipeline
             stall = true;
             idEx.clear(); // Insert a bubble in ID/EX
-            std::cout << "HAZARD: Load-use hazard detected, stalling" << std::endl;
+            // std::cout << "HAZARD: Load-use hazard detected, stalling" << std::endl;
             return;
         }
     }
@@ -168,9 +168,9 @@ void ForwardingProcessor::stageEX() {
         switch (funct3) {
             case 0x0: // BEQ
                 exMem.branchTaken = (rs1Value == rs2Value);
-                std::cout << "EX STAGE: BEQ with forwarded rs1Val: " << rs1Value 
-                         << " rs2Val: " << rs2Value 
-                         << " taken: " << exMem.branchTaken << std::endl;
+                // std::cout << "EX STAGE: BEQ with forwarded rs1Val: " << rs1Value 
+                //          << " rs2Val: " << rs2Value 
+                //          << " taken: " << exMem.branchTaken << std::endl;
                 break;
             case 0x1: // BNE
                 exMem.branchTaken = (rs1Value != rs2Value);
