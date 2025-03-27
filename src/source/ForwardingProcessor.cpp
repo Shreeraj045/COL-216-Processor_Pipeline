@@ -1,5 +1,6 @@
 #include "../include/ForwardingProcessor.hpp"
 #include <iostream>
+#include <climits>
 
 ForwardingProcessor::ForwardingProcessor() : Processor() {
 }

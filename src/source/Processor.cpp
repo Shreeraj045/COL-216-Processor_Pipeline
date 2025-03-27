@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <sstream> // Added this include
-
+#include <climits> // Added this include
 Processor::Processor() : pc(0), cycleCount(0), instructionCount(0), stall(false) {
 }
 
@@ -581,7 +581,7 @@ void Processor::updatePipelineTable() {
     }
     
     // Instruction in IF stage
-    if (!stall && pc < memory.getInstructionCount() * 4) {
+    if (!stall && !libt && pc < memory.getInstructionCount() * 4) {
         // Only track IF for valid PC addresses within program memory
         updateInstructionStage(pc, "IF");
     } else if (stall && ifId.valid) {
