@@ -1,0 +1,7 @@
+Instruction (PC)       ; C0  ; C1  ; C2  ; C3  ; C4  ; C5  ; C6  ; C7  ; C8  ; C9  ; C10 ; C11 ; C12 ; C13 ; C14 ; C15 ; C16 ; C17 ; C18 ; C19 ; C20 ; C21 ; C22 ; C23 ; C24 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+addi x1 x0 4 (0)       ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   ; -   
+addi x7 x0 10 (4)      ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   
+bgeu x1 x7 8 (8)       ; -   ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  
+addi x8 x0 1 (12)      ; -   ; -   ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM 
+jalr x0 x1 0 (16)      ; -   ; -   ; -   ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  ; MEM ; WB  ; -   ; IF  ; ID  ; EX  
