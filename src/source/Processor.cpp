@@ -612,12 +612,26 @@ void Processor::updateInstructionStage(uint32_t pc, const std::string& stage) {
                 tracker.stages.resize(cycleCount + 1, "-");
             }
             
-            // Update the stage for this cycle by appending to existing stages
+            // Check if the current stage is the same as the previous cycle's stage
+            bool sameAsPrevious = false;
+            if (cycleCount > 0 && tracker.stages.size() > static_cast<size_t>(cycleCount - 1)) {
+                sameAsPrevious = (tracker.stages[cycleCount - 1] == stage);
+            }
+            
+            // Update the stage for this cycle
             if (tracker.stages[cycleCount] == "-") {
-                tracker.stages[cycleCount] = stage;
+                // If the stage is the same as previous cycle, mark with "-"
+                if (sameAsPrevious) {
+                    tracker.stages[cycleCount] = "-";
+                } else {
+                    tracker.stages[cycleCount] = stage;
+                }
             } else {
                 // Combine stages if there's already a stage for this cycle
-                tracker.stages[cycleCount] += "/" + stage;
+                // Only add if not already a duplicate
+                if (!sameAsPrevious) {
+                    tracker.stages[cycleCount] += "/" + stage;
+                }
             }
             return;
         }
