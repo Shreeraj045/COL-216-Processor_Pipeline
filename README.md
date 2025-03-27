@@ -78,7 +78,8 @@ For the non-forwarding design, look at a branch instruction that waits on a prev
 If we decode the branch in the ID stage:
 ```
 IF  ID  EX  MEM  WB  
--   IF  ID  -    EX  MEM  WB  -> One stall if branch prediction is done in ID stage
+-   IF  ID  EX  MEM  WB 
+-   -   IF  ID  -    EX  MEM  WB  -> One stall if branch prediction is done in ID stage
 ```
 
 If we do it in the EX stage, there is no such stall. Hence, we choose to do branch prediction in the EX stage. In the non-forwarding case, this does not affect performance, as values are taken after the WB stage, so ID stage decoding is better.
