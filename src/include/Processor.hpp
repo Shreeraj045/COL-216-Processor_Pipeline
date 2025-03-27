@@ -31,10 +31,10 @@ protected:
     
     // Structure to track instruction stages through all cycles
     struct InstructionTracker {
-        std::string assembly;
-        uint32_t pc;  // PC address of the instruction
-        std::vector<std::string> stages; // Each position represents a cycle
-        int firstCycle; // First cycle when instruction entered pipeline
+        std::string assembly;      // Instruction text
+        uint32_t pc;               // Program counter value
+        int firstCycle;            // First cycle when this instruction entered pipeline
+        std::vector<std::string> stages; // Modified to handle multiple stages per cycle
     };
     
     // Table to track all instructions

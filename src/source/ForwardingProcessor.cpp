@@ -92,6 +92,12 @@ void ForwardingProcessor::stageEX() {
     exMem.valid = true;
     exMem.isBranch = idEx.isBranch;
     
+    // Add debug info for jump instruction identification
+    auto instr = exMem.instruction;
+    std::cout << "DEBUG: Instruction opcode: 0x" << std::hex << instr->getOpcode() << std::dec << std::endl;
+    std::cout << "DEBUG: isJType: " << instr->isJType() << ", isJump: " << instr->isJump() << std::endl;
+    std::cout << "DEBUG: Branch target would be: " << (idEx.pc + instr->getImm()) << std::endl;
+    
     // Forward values from MEM/WB if needed
     int rs1 = idEx.instruction->getRs1();
     int rs2 = idEx.instruction->getRs2();
@@ -148,7 +154,6 @@ void ForwardingProcessor::stageEX() {
     exMem.rs1Value = rs1Value;
     exMem.rs2Value = rs2Value;
     
-    auto instr = exMem.instruction;
     int aluResult = 0;
     
     // NEW BRANCH HANDLING: Evaluate branches in EX with forwarded values
@@ -197,14 +202,19 @@ void ForwardingProcessor::stageEX() {
             
             std::cout << "EX STAGE: Branch taken! Target PC: " << exMem.branchTarget << std::endl;
         }
-    } else if (instr->isJump()) {
+    } else if (instr->isJump() || instr->getOpcode() == 0x6F) { // Added direct opcode check
+        // Modified condition to catch all jump instructions
+        std::cout << "DEBUG: Jump instruction detected!" << std::endl;
+        
         // For jumps
         if (instr->getOpcode() == 0x6F) { // JAL
             exMem.branchTarget = idEx.pc + instr->getImm();
             aluResult = idEx.pc + 4; // Return address
+            std::cout << "DEBUG: JAL jump to " << exMem.branchTarget << std::endl;
         } else if (instr->getOpcode() == 0x67) { // JALR
             exMem.branchTarget = (rs1Value + instr->getImm()) & ~1; // Clear LSB
             aluResult = idEx.pc + 4; // Return address
+            std::cout << "DEBUG: JALR jump to " << exMem.branchTarget << std::endl;
         }
         
         // Jumps are always taken

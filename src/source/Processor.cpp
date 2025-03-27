@@ -427,8 +427,6 @@ void Processor::stageWB() {
         registers.write(rdNum, memWb.aluResult);
     }
     //print just finished WB instruction with cycle count
-    
-    // Don't write back for store and branch instructions
 }
 
 // Helper function to strip comments and normalize instruction text
@@ -526,8 +524,14 @@ void Processor::updateInstructionStage(uint32_t pc, const std::string& stage) {
             if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
                 tracker.stages.resize(cycleCount + 1, "-");
             }
-            // Update the stage for this cycle
-            tracker.stages[cycleCount] = stage;
+            
+            // Update the stage for this cycle by appending to existing stages
+            if (tracker.stages[cycleCount] == "-") {
+                tracker.stages[cycleCount] = stage;
+            } else {
+                // Combine stages if there's already a stage for this cycle
+                tracker.stages[cycleCount] += "/" + stage;
+            }
             return;
         }
     }
@@ -554,8 +558,16 @@ void Processor::printPipelineDiagram() {
         maxInstrLength = std::max(maxInstrLength, tracker.assembly.length() + 10); // Add extra space for PC
     }
     
-    // Define a fixed column width for each cycle
-    const int cycleColWidth = 5; // Width for each cycle column
+    // Find the maximum length of any stage string for proper column sizing
+    size_t maxStageLength = 2; // Default width for single stages
+    for (const auto& tracker : pipelineTable) {
+        for (const auto& stage : tracker.stages) {
+            maxStageLength = std::max(maxStageLength, stage.length());
+        }
+    }
+    
+    // Define the column width based on the longest stage
+    const int cycleColWidth = maxStageLength + 3; // Add padding
     
     // Print cycle numbers at the top
     std::cout << std::left << std::setw(maxInstrLength) << "Instruction (PC)";
@@ -579,7 +591,7 @@ void Processor::printPipelineDiagram() {
     for (const auto& tracker : sortedTrackers) {
         // Format instruction with PC
         std::ostringstream instrWithPC;
-        instrWithPC << tracker.assembly << " (0x" << std::hex << tracker.pc << ")";
+        instrWithPC << tracker.assembly << " (" << std::dec << tracker.pc << ")";
         std::cout << std::left << std::setw(maxInstrLength) << instrWithPC.str();
         
         // Add each stage for each cycle

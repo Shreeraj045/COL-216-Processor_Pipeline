@@ -1,4 +1,5 @@
 #include "../include/Instruction.hpp"
+#include <iostream>
 
 Instruction::Instruction() : machineCode(0), assembly("NOP") {
     decode();
@@ -16,6 +17,14 @@ void Instruction::decode() {
     rs1 = (machineCode >> 15) & 0x1F;
     rs2 = (machineCode >> 20) & 0x1F;
     funct7 = (machineCode >> 25) & 0x7F;
+    std::cout<<"machineCode: "<<machineCode<<std::endl;
+    std::cout<<"opcode: "<<opcode<<std::endl;
+    std::cout<<"rd: "<<rd<<std::endl;
+    std::cout<<"funct3: "<<funct3<<std::endl;
+    std::cout<<"rs1: "<<rs1<<std::endl;
+    std::cout<<"rs2: "<<rs2<<std::endl;
+    std::cout<<"funct7: "<<funct7<<std::endl;
+
     
     // Decode immediate based on instruction format
     if (isRType()) {
@@ -62,6 +71,13 @@ void Instruction::decode() {
             imm |= 0xFFE00000;
         }
     }
+    std::cout<<"machineCode: "<<machineCode<<std::endl;
+    std::cout<<"opcode: "<<opcode<<std::endl;
+    std::cout<<"rd: "<<rd<<std::endl;
+    std::cout<<"funct3: "<<funct3<<std::endl;
+    std::cout<<"rs1: "<<rs1<<std::endl;
+    std::cout<<"rs2: "<<rs2<<std::endl;
+    std::cout<<"funct7: "<<funct7<<std::endl;
 }
 
 bool Instruction::isRType() const {
@@ -88,6 +104,7 @@ bool Instruction::isUType() const {
 }
 
 bool Instruction::isJType() const {
+    std::cout<<"opcode: JYOE HTYOEN JJJJJJJJJJJJJJJ "<<opcode<<std::endl;
     return (opcode == 0x6F);  // JAL
 }
 
