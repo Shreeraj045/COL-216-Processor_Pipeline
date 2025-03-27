@@ -493,10 +493,14 @@ void Processor::updatePipelineTable() {
         updateInstructionStage(instrPC, "ID");
     }
     
-    // Instruction in IF stage
+    // Instruction in IF stage - Fix for branch handling
     if (!stall && pc < memory.getInstructionCount() * 4) {
-        // Only track IF for valid PC addresses within program memory
-        updateInstructionStage(pc, "IF");
+        // Don't mark the next instruction as being in IF if a branch was just taken
+        // This prevents duplicate IF stages when a branch redirects the PC
+        if (!tibt && !libt) {
+            // Only track IF for valid PC addresses within program memory
+            updateInstructionStage(pc, "IF");
+        }
     } else if (stall && ifId.valid) {
         // When stalled, no new instruction enters IF
         // The instruction in IF/ID stays in IF stage
