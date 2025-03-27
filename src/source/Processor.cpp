@@ -489,8 +489,8 @@ void Processor::updatePipelineTable() {
         updateInstructionStage(instrPC, "EX");
     }
     
-    // Instruction in ID stage
-    if (ifId.valid) {
+    // Instruction in ID stage - Only update if not stalled
+    if (ifId.valid && !stall) {
         uint32_t instrPC = ifId.pc;
         updateInstructionStage(instrPC, "ID");
     }
@@ -501,8 +501,8 @@ void Processor::updatePipelineTable() {
         updateInstructionStage(pc, "IF");
     } else if (stall && ifId.valid) {
         // When stalled, no new instruction enters IF
-        // The instruction before ID is still in IF
-        // We don't need to do anything special here, as the instruction won't progress
+        // The instruction in IF/ID stays in IF stage
+        // No need to do anything special here
     }
     
     // Update all existing instructions to show they're not in any stage this cycle if necessary
