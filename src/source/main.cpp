@@ -1,6 +1,7 @@
 #include "../include/ForwardingProcessor.hpp"
 #include "../include/NonForwardingProcessor.hpp"
 using namespace std;
+
 void printUsage(const string& progName) {
     cerr << "Usage: " << progName << " <instruction_file> <cycle_count>\n";
 }
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    // Determine which processor variant to use based on executable name
+    // which processor - forwarding or non-forwarding
     string exeName = argv[0];
     string::size_type lastSlash = exeName.find_last_of("/\\");
     if (lastSlash != string::npos) {
@@ -34,6 +35,8 @@ int main(int argc, char* argv[]) {
     }
     
     unique_ptr<Processor> processor;
+
+    //make the call acoording to given processor type
     if (exeName == "forward") {
         processor = make_unique<ForwardingProcessor>();
     } else if (exeName == "noforward") {

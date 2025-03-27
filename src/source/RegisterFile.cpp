@@ -17,6 +17,7 @@ void RegisterFile::write(int regNum, int value) {
 }
 
 void RegisterFile::reset() {
+    //initialise all registers to 0
     for (int i = 0; i < 32; ++i) {
         registers[i] = 0;
     }
