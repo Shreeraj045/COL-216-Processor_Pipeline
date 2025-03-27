@@ -527,15 +527,10 @@ void Processor::updatePipelineTable() {
     
     // Instruction in IF stage
     if (!stall && pc < memory.getInstructionCount() * 4) {
-        // Only track IF for valid PC addresses within program memory
+        // pc must be valid
         updateInstructionStage(pc, "IF");
-    } else if (stall && ifId.valid) {
-        // When stalled, no new instruction enters IF
-        // The instruction in IF/ID stays in IF stage
-        // No need to do anything special here
     }
     
-    // Update all existing instructions to show they're not in any stage this cycle if necessary
     for (auto& tracker : pipelineTable) {
         if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
             tracker.stages.resize(cycleCount + 1, "-");
@@ -547,33 +542,27 @@ void Processor::updateInstructionStage(uint32_t pc, const string& stage) {
     // Find the instruction with matching PC in the table
     for (auto& tracker : pipelineTable) {
         if (tracker.pc == pc) {
-            // If this is the first time we're seeing this instruction executed
             if (tracker.firstCycle == -1) {
                 tracker.firstCycle = cycleCount;
             }
             
-            // Make sure the stages vector is large enough for the current cycle
+            // stages vector is completed till the current cycle
             if (tracker.stages.size() <= static_cast<size_t>(cycleCount)) {
                 tracker.stages.resize(cycleCount + 1, "-");
             }
             
-            // Check if the current stage is the same as the previous cycle's stage
             bool sameAsPrevious = false;
             if (cycleCount > 0 && tracker.stages.size() > static_cast<size_t>(cycleCount - 1)) {
                 sameAsPrevious = (tracker.stages[cycleCount - 1] == stage);
             }
             
-            // Update the stage for this cycle
             if (tracker.stages[cycleCount] == "-") {
-                // If the stage is the same as previous cycle, mark with "-"
                 if (sameAsPrevious) {
                     tracker.stages[cycleCount] = "-";
                 } else {
                     tracker.stages[cycleCount] = stage;
                 }
             } else {
-                // Combine stages if there's already a stage for this cycle
-                // Only add if not already a duplicate
                 if (!sameAsPrevious) {
                     tracker.stages[cycleCount] += "/" + stage;
                 }
@@ -605,7 +594,7 @@ void Processor::printPipelineDiagram() {
     }
     
     // Find the maximum length of any stage string for proper column sizing
-    size_t maxStageLength = 2; // Default width for single stages
+    size_t maxStageLength = 2; 
     for (const auto& tracker : pipelineTable) {
         for (const auto& stage : tracker.stages) {
             maxStageLength = max(maxStageLength, stage.length());
@@ -613,7 +602,7 @@ void Processor::printPipelineDiagram() {
     }
     
     // Define the column width based on the longest stage
-    const int cycleColWidth = maxStageLength + 3; // Add padding
+    const int cycleColWidth = maxStageLength + 3; 
     
     // Print cycle numbers at the top
     cout << left << setw(maxInstrLength) << "Instruction (PC)";
