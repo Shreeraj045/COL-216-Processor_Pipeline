@@ -21,18 +21,18 @@ OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
 all: forward noforward
 
 forward: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o forward $(OBJS) -DFORWARDING=1
+	@$(CXX) $(CXXFLAGS) -o forward $(OBJS) -DFORWARDING=1
 
 noforward: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o noforward $(OBJS)
+	@$(CXX) $(CXXFLAGS) -o noforward $(OBJS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -I$(INCLUDE_DIR)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@ -I$(INCLUDE_DIR)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -rf $(BUILD_DIR) forward noforward
+	@rm -rf $(BUILD_DIR) forward noforward
 
 .PHONY: all clean forward noforward
