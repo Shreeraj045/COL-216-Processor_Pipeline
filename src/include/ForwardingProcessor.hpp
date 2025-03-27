@@ -3,13 +3,13 @@
 using namespace std;
 class ForwardingProcessor : public Processor {
 protected:
-    // Override hazard detection to implement forwarding
+    //overriding hazard detection for forwarding processor 
     void detectHazards() override;
     
-    // Override ID stage to implement forwarding for branches
+    // ID stage don't detect branch address (like in RIPES simulator)
     void stageID() override;
     
-    // Override EX stage to implement forwarding
+    // EX stage in forwarding detect branch address (if taken) (like in RIPES simulator)
     void stageEX() override;
     
 public:
