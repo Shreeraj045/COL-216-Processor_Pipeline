@@ -10,6 +10,9 @@ class Processor {
 protected:
     // Processor state
     uint32_t pc;
+    uint32_t btpc ; // last instruction branch taken target address 
+    bool libt ; //last instrcution branch taken or not 
+    bool tibt ; //last instrcution branch taken or not 
     Memory memory;
     RegisterFile registers;
     
@@ -29,6 +32,7 @@ protected:
     // Structure to track instruction stages through all cycles
     struct InstructionTracker {
         std::string assembly;
+        uint32_t pc;  // PC address of the instruction
         std::vector<std::string> stages; // Each position represents a cycle
         int firstCycle; // First cycle when instruction entered pipeline
     };
@@ -51,6 +55,9 @@ protected:
     
     // Helper to add or update instruction in table
     void updateOrAddInstruction(const std::string& assembly, const std::string& stage);
+    
+    // New method to update instruction stage based on PC
+    void updateInstructionStage(uint32_t pc, const std::string& stage);
     
     // Helper function to strip comments from assembly code
     std::string stripComments(const std::string& assembly);
