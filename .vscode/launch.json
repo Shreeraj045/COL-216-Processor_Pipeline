@@ -1,16 +1,14 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-		
 	  {
-		"type": "cppdbg",
+		"type": "lldb",
 		"request": "launch",
-		"name": "Launch Program",
+		"name": "Debug Program",
 		"program": "${workspaceFolder}/src/${input:executableName}",
 		"args": ["${workspaceFolder}/inputfiles/ripes_input.txt", "40"],
 		"cwd": "${workspaceFolder}",
-		"stopAtEntry": false,
-		"preLaunchTask": "build"
+		 "preLaunchTask": "build"
 	  }
 	],
 	"inputs": [
@@ -21,4 +19,4 @@
 		"options": ["forward", "noforward"]
 	  }
 	]
-  }
+}

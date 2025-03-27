@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <sstream> // Added this include
 
 Processor::Processor() : pc(0), cycleCount(0), instructionCount(0), stall(false) {
 }
@@ -12,12 +13,14 @@ void Processor::loadProgram(const std::string& filename) {
     
     // Preload all instructions into the pipeline table
     for (uint32_t i = 0; i < memory.getInstructionCount(); i++) {
-        auto instr = memory.getInstruction(i * 4);
+        uint32_t instrAddr = i * 4;
+        auto instr = memory.getInstruction(instrAddr);
         std::string instrText = stripComments(instr.getAssembly());
         
         // Add all instructions to the tracking table without any stages yet
         InstructionTracker newTracker;
         newTracker.assembly = instrText;
+        newTracker.pc = instrAddr;  // Store the instruction's PC address
         newTracker.firstCycle = -1;  // -1 indicates not yet executed
         pipelineTable.push_back(newTracker);
     }
@@ -79,7 +82,7 @@ void Processor::stageIF() {
     if (stall) {
         return; // Don't fetch new instruction if stalled
     }
-    
+
     // Fetch the instruction at the current PC
     auto instr = memory.getInstruction(pc);
     
@@ -87,9 +90,23 @@ void Processor::stageIF() {
     ifId.valid = true;
     ifId.instruction = std::make_shared<Instruction>(instr);
     ifId.pc = pc;
-    
+    //print instruciton with cycle count 
+    std::string instrText = stripComments(instr.getAssembly());
+    std::cout<<"************************************************"<<std::endl;
+    std::cout<<"Instruction at IF: "<<instrText<<"cycle"<<cycleCount<<std::endl;
+    std::cout<<"************************************************"<<std::endl;
+
     // Increment PC
     pc += 4;
+
+    if (tibt) {
+        std::cout<<"branch taken to pc: "<<btpc<<std::endl;
+        ifId.clear();
+        tibt = false ; 
+        pc = btpc;
+        libt = true ; 
+    }
+
 }
 
 void Processor::stageID() {
@@ -105,6 +122,17 @@ void Processor::stageID() {
     }
     
     // Copy the instruction and PC from IF/ID to ID/EX
+    //if previous instruction was branch taken then we need to flush the pipeline
+    // if (libt) {
+    //     std::cout<<"flushing the pipeline"<<std::endl;
+    //     std::cout<<"PC: "<<ifId.pc<<std::endl;
+    //     ifId.clear();
+    //     libt = false;
+    //     return;
+    // }
+    //print pc 
+    // std::cout<<"PC: "<<ifId.pc<<std::endl;
+    // std::cout<<"not flushing the pipeline"<<std::endl;
     idEx.instruction = ifId.instruction;
     idEx.pc = ifId.pc;
     idEx.valid = true;
@@ -145,6 +173,7 @@ void Processor::stageID() {
         switch (funct3) {
             case 0x0: // BEQ
                 idEx.branchTaken = (rs1Val == rs2Val);
+                std::cout<<"BEQ with rs1Val: "<<rs1Val<<" rs2Val: "<<rs2Val<<std::endl;
                 break;
             case 0x1: // BNE
                 idEx.branchTaken = (rs1Val != rs2Val);
@@ -171,8 +200,27 @@ void Processor::stageID() {
     if (idEx.isBranch && idEx.branchTaken) {
         // We're predicting not taken but branch is taken, flush and redirect
         ifId.clear();
-        pc = idEx.branchTarget;
+        // pc = idEx.branchTarget;
+        btpc = idEx.branchTarget;
+        //print which instrcuton just took place in ID stage 
+        auto instr = memory.getInstruction(idEx.pc);
+        std::string instrText = stripComments(instr.getAssembly());
+        std::cout<<"Instruction at pc: "<<instrText<<std::endl;
+        std::cout<<"BTPC"<<btpc<<std::endl;
+        //print instryuction of btpc pc 
+        auto kinstr = memory.getInstruction(btpc);
+        std::string kinstrText = stripComments(kinstr.getAssembly());
+        std::cout<<"Instruction at btpc: "<<kinstrText<<std::endl;
+        tibt = true ; 
     }
+    //print jusst finsihed ID instruciton with cycle count 
+    auto cinstr = memory.getInstruction(idEx.pc);
+    std::string cinstrText = stripComments(cinstr.getAssembly());
+    std::cout<<"************************************************"<<std::endl;
+    std::cout<<"Instruction at ID: "<<cinstrText<<"cycle"<<cycleCount<<std::endl;
+    std::cout<<"************************************************"<<std::endl;
+
+    
 }
 
 void Processor::stageEX() {
@@ -289,6 +337,11 @@ void Processor::stageEX() {
     }
     
     exMem.aluResult = aluResult;
+
+    auto kinstr = memory.getInstruction(idEx.pc);
+    std::cout<<"************************************************"<<std::endl;
+    std::cout<<"Instruction at EX: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    std::cout<<"************************************************"<<std::endl;
 }
 
 void Processor::stageMEM() {
@@ -344,14 +397,27 @@ void Processor::stageMEM() {
                 break;
         }
     }
+    //prit just finished MEM instruction with cycle count
+    auto kinstr = memory.getInstruction(exMem.pc);
+    std::cout<<"************************************************"<<std::endl;
+    std::cout<<"Instruction at MEM: "<<stripComments(kinstr.getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    std::cout<<"************************************************"<<std::endl;
+
 }
 
 void Processor::stageWB() {
+
     if (!memWb.valid) {
         return;
     }
     
     auto instr = memWb.instruction;
+
+    std::cout<<"************************************************"<<std::endl;
+    std::cout<<"Instruction at WB: "<<stripComments(instr->getAssembly())<<"cycle"<<cycleCount<<std::endl;
+    std::cout<<"************************************************"<<std::endl;
+
+
     int rdNum = instr->getRd();
     
     // Write back result to register file
@@ -363,6 +429,7 @@ void Processor::stageWB() {
               instr->isJump()) {
         registers.write(rdNum, memWb.aluResult);
     }
+    //print just finished WB instruction with cycle count
     
     // Don't write back for store and branch instructions
 }
@@ -405,54 +472,40 @@ std::string Processor::stripComments(const std::string& assembly) {
 }
 
 void Processor::updatePipelineTable() {
-    // Track all instructions in the pipeline for this cycle
+    // Track all instructions in the pipeline for this cycle based on their PC addresses
     
     // Instruction in WB stage
     if (memWb.valid) {
-        std::string instr = stripComments(memWb.instruction->getAssembly());
-        updateOrAddInstruction(instr, "WB");
+        uint32_t instrPC = memWb.pc;
+        updateInstructionStage(instrPC, "WB");
     }
     
     // Instruction in MEM stage
     if (exMem.valid) {
-        std::string instr = stripComments(exMem.instruction->getAssembly());
-        updateOrAddInstruction(instr, "MEM");
+        uint32_t instrPC = exMem.pc;
+        updateInstructionStage(instrPC, "MEM");
     }
     
     // Instruction in EX stage
     if (idEx.valid) {
-        std::string instr = stripComments(idEx.instruction->getAssembly());
-        updateOrAddInstruction(instr, "EX");
+        uint32_t instrPC = idEx.pc;
+        updateInstructionStage(instrPC, "EX");
     }
     
     // Instruction in ID stage
     if (ifId.valid) {
-        std::string instr = stripComments(ifId.instruction->getAssembly());
-        updateOrAddInstruction(instr, "ID");
+        uint32_t instrPC = ifId.pc;
+        updateInstructionStage(instrPC, "ID");
     }
     
-    // Instruction in IF stage (if not stalled)
-    if (!stall) {
-        auto fetchedInstr = memory.getInstruction(pc);
-        std::string instr = stripComments(fetchedInstr.getAssembly());
-        updateOrAddInstruction(instr, "IF");
-    } else {
-        // When stalled, the instruction currently visible at pc is still in IF
-        // We need to make sure it's shown as being in the pipeline
-        if (cycleCount > 0) { // Not for the first cycle
-            // Find the instruction that's stalled
-            for (auto& tracker : pipelineTable) {
-                // If the instruction was in IF in the previous cycle and isn't in any other stage now
-                if (tracker.stages.size() > static_cast<size_t>(cycleCount) && 
-                    tracker.stages[cycleCount-1] == "IF" &&
-                    tracker.stages.size() <= static_cast<size_t>(cycleCount + 1)) {
-                    // Mark it as still in IF
-                    tracker.stages.resize(cycleCount + 1, "-");
-                    tracker.stages[cycleCount] = "IF";
-                    break;
-                }
-            }
-        }
+    // Instruction in IF stage
+    if (!stall && pc < memory.getInstructionCount() * 4) {
+        // Only track IF for valid PC addresses within program memory
+        updateInstructionStage(pc, "IF");
+    } else if (stall && ifId.valid) {
+        // When stalled, no new instruction enters IF
+        // The instruction before ID is still in IF
+        // We don't need to do anything special here, as the instruction won't progress
     }
     
     // Update all existing instructions to show they're not in any stage this cycle if necessary
@@ -463,12 +516,10 @@ void Processor::updatePipelineTable() {
     }
 }
 
-void Processor::updateOrAddInstruction(const std::string& assembly, const std::string& stage) {
-    // Try to find the instruction in the table
+void Processor::updateInstructionStage(uint32_t pc, const std::string& stage) {
+    // Find the instruction with matching PC in the table
     for (auto& tracker : pipelineTable) {
-        if (tracker.assembly == assembly) {
-            // Instruction already exists in the table
-            
+        if (tracker.pc == pc) {
             // If this is the first time we're seeing this instruction executed
             if (tracker.firstCycle == -1) {
                 tracker.firstCycle = cycleCount;
@@ -484,29 +535,35 @@ void Processor::updateOrAddInstruction(const std::string& assembly, const std::s
         }
     }
     
-    // If somehow the instruction wasn't preloaded (like a NOP), add it now
-    InstructionTracker newTracker;
-    newTracker.assembly = assembly;
-    newTracker.firstCycle = cycleCount;
-    newTracker.stages.resize(cycleCount + 1, "-");
-    newTracker.stages[cycleCount] = stage;
-    pipelineTable.push_back(newTracker);
+    // If somehow the instruction wasn't preloaded, add it now
+    if (pc < memory.getInstructionCount() * 4) {
+        auto instr = memory.getInstruction(pc);
+        std::string instrText = stripComments(instr.getAssembly());
+        
+        InstructionTracker newTracker;
+        newTracker.assembly = instrText;
+        newTracker.pc = pc;
+        newTracker.firstCycle = cycleCount;
+        newTracker.stages.resize(cycleCount + 1, "-");
+        newTracker.stages[cycleCount] = stage;
+        pipelineTable.push_back(newTracker);
+    }
 }
 
 void Processor::printPipelineDiagram() {
     // Find the maximum length of any assembly instruction for alignment
-    size_t maxInstrLength = 0;
+    size_t maxInstrLength = 15; // Minimum width for instruction column
     for (const auto& tracker : pipelineTable) {
-        maxInstrLength = std::max(maxInstrLength, tracker.assembly.length());
+        maxInstrLength = std::max(maxInstrLength, tracker.assembly.length() + 10); // Add extra space for PC
     }
     
-    // Define a fixed column width for each cycle - just enough for ";MEM"
-    const int cycleColWidth = 4; // Width for each cycle column
+    // Define a fixed column width for each cycle
+    const int cycleColWidth = 5; // Width for each cycle column
     
     // Print cycle numbers at the top
-    std::cout << std::left << std::setw(maxInstrLength) << "Instruction";
+    std::cout << std::left << std::setw(maxInstrLength) << "Instruction (PC)";
     for (int i = 0; i < cycleCount; i++) {
-        std::string cycleHeader = ";C" + std::to_string(i);
+        std::string cycleHeader = "| C" + std::to_string(i);
         std::cout << std::left << std::setw(cycleColWidth) << cycleHeader;
     }
     std::cout << std::endl;
@@ -514,48 +571,48 @@ void Processor::printPipelineDiagram() {
     // Print a separator line
     std::cout << std::string(maxInstrLength + cycleCount * cycleColWidth, '-') << std::endl;
     
+    // Sort instructions by their PC for a logical ordering
+    std::vector<InstructionTracker> sortedTrackers = pipelineTable;
+    std::sort(sortedTrackers.begin(), sortedTrackers.end(), 
+              [](const InstructionTracker& a, const InstructionTracker& b) {
+                  return a.pc < b.pc;
+              });
+    
     // Print each instruction with its pipeline stages
-    for (const auto& tracker : pipelineTable) {
-        // Pad the instruction to align the pipeline stages
-        std::cout << std::left << std::setw(maxInstrLength) << tracker.assembly;
-        
-        // Show pipeline stages for all instructions that entered the pipeline
+    for (const auto& tracker : sortedTrackers) {
+        // Only show instructions that entered the pipeline
         if (tracker.firstCycle != -1) {
-            // Add each stage separated by semicolons with consistent width
-            std::string prevStage = "";
-            for (size_t i = 0; i < tracker.stages.size(); i++) {
-                const std::string& stage = tracker.stages[i];
-                
-                // Format the stage output with semicolon
-                std::string stageOutput;
-                
-                // If this stage is the same as previous and not "-", print "-" instead
-                // to indicate a stall rather than repeating the stage name
-                if (stage == prevStage && stage != "-") {
-                    stageOutput = ";-";
-                } else {
-                    stageOutput = ";" + stage;
-                }
-                
-                // Ensure consistent width for each column
-                std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
-                
-                if (stage != "-") {
-                    prevStage = stage;
-                }
-            }
+            // Format instruction with PC
+            std::ostringstream instrWithPC;
+            instrWithPC << tracker.assembly << " (0x" << std::hex << tracker.pc << ")";
+            std::cout << std::left << std::setw(maxInstrLength) << instrWithPC.str();
             
-            // If we have fewer stages than cycles, pad with empty spaces
-            for (size_t i = tracker.stages.size(); i < static_cast<size_t>(cycleCount); i++) {
-                std::cout << std::left << std::setw(cycleColWidth) << "; ";
+            // Add each stage for each cycle
+            for (size_t i = 0; i < static_cast<size_t>(cycleCount); i++) {
+                std::string stageOutput = "| ";
+                
+                if (i < tracker.stages.size()) {
+                    stageOutput += tracker.stages[i];
+                } else {
+                    stageOutput += " ";
+                }
+                
+                std::cout << std::left << std::setw(cycleColWidth) << stageOutput;
             }
-        } else {
-            // For instructions that never entered pipeline, just add empty stages
-            for (int i = 0; i < cycleCount; i++) {
-                std::cout << std::left << std::setw(cycleColWidth) << "; ";
-            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
+}
+
+void Processor::updateOrAddInstruction(const std::string& assembly, const std::string& stage) {
+    // Trivial implementation: you can adapt it to your logic
+    // For now, just record a new instruction tracker entry
+    InstructionTracker instrTracker;
+    instrTracker.assembly = assembly;
+    instrTracker.pc = 0;      // no specific PC since we don't have it here
+    instrTracker.firstCycle = cycleCount;
+    instrTracker.stages.resize(cycleCount + 1, "-");
+    instrTracker.stages[cycleCount] = stage;
+    pipelineTable.push_back(instrTracker);
 }
 
